@@ -412,7 +412,34 @@ function applyFixedCode(blockId, fixType) {
     saveAndCommitChanges(`Auto-fixed Python code block #${blockId}`);
     
     // Show a notification
-    showNotification('Fixed code applied and committed successfully!');
+    showNotification('Fixed code applied and committed successfully!', 'success');
+}
+
+// Function to show notifications
+function showNotification(message, type = 'info') {
+    // Create notification element if it doesn't exist
+    let notificationContainer = document.getElementById('notification-container');
+    if (!notificationContainer) {
+        notificationContainer = document.createElement('div');
+        notificationContainer.id = 'notification-container';
+        document.body.appendChild(notificationContainer);
+    }
+    
+    // Create the notification
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    
+    // Add to container
+    notificationContainer.appendChild(notification);
+    
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+        notification.classList.add('fade-out');
+        setTimeout(() => {
+            notification.remove();
+        }, 500);
+    }, 3000);
 }
 
 // Function to save and commit changes to Git

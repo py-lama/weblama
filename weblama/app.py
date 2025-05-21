@@ -497,19 +497,39 @@ def save_markdown():
         })
 
 
-@app.route('/api/git/history', methods=['GET'])
-def get_file_history():
-    """Get the history of the current file."""
-    filename = request.args.get('filename') or session.get('current_filename', 'document.md')
+@app.route('/api/git/save', methods=['POST'])
+def save_to_git():
+    data = request.get_json()
+    content = data.get('content')
+    filename = data.get('filename')
+    message = data.get('message', 'Auto-commit: Updated file')
     
-    # Get the file history from Git
-    history = git_integration.get_file_history(filename)
+    if not filename or content is None:
+        return jsonify({'error': 'Filename and content are required'}), 400
     
-    return jsonify({
-        'success': True,
-        'filename': filename,
-        'history': history
-    })
+    try:
+        git = GitIntegration()
+        git.save_file(content, filename, message)
+        return jsonify({'success': True, 'message': f'File {filename} saved and committed with message: {message}'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/git/history', methods=['POST'])
+def get_git_history():
+    data = request.get_json()
+    filename = data.get('filename')
+    
+    if not filename:
+        return jsonify({'error': 'No filename provided'}), 400
+    
+    try:
+        git = GitIntegration()
+        history = git.get_file_history(filename)
+        return jsonify({'success': True, 'history': history})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 
 @app.route('/api/git/content', methods=['GET'])
 def get_file_content_at_commit():

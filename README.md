@@ -2,6 +2,8 @@
 
 A web-based Markdown editor with syntax highlighting, Mermaid diagram support, automatic Python code execution and fixing, and Git integration.
 
+![WebLama.png](weblama.png)
+
 ## Features
 
 - **Rich Markdown Editor**: Syntax highlighting for various languages including Python, JavaScript, SQL, and Java
