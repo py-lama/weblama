@@ -1,0 +1,25 @@
+{
+  "name": "weblama",
+  "version": "1.0.0",
+  "description": "Web frontend for the PyLama ecosystem",
+  "main": "index.js",
+  "scripts": {
+    "start": "http-server ./static -p 80",
+    "build": "cp -r ./static/* ./dist/",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "weblama",
+    "pylama",
+    "frontend"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.27.2",
+    "codemirror": "^5.65.5",
+    "http-server": "^14.1.1",
+    "marked": "^4.0.18",
+    "mermaid": "^9.1.7"
+  }
+}
