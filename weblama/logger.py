@@ -47,9 +47,11 @@ logger.addHandler(console_handler)
 logger.addHandler(file_handler)
 
 # Browser console handler for debug mode
-class BrowserConsoleHandler:
+import logging
+class BrowserConsoleHandler(logging.Handler):
     """Custom handler to store logs for browser console"""
-    def __init__(self):
+    def __init__(self, level=logging.NOTSET):
+        super().__init__(level)
         self.logs = []
         self.max_logs = 100  # Maximum number of logs to keep
     

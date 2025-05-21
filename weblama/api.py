@@ -172,7 +172,7 @@ def execute_code():
             
             results.append(block_result)
         
-        return jsonify({'status': 'success', 'result': results})
+        return jsonify({'status': 'success', 'results': results})
     except Exception as e:
         logger.error(f'Error executing code: {str(e)}')
         return jsonify({'status': 'error', 'error': str(e)}), 500
