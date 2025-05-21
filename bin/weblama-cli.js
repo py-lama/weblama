@@ -20,8 +20,8 @@ const packageJson = require('../package.json');
 const version = packageJson.version;
 
 // Default configuration
-const DEFAULT_PORT = 8081;
-const DEFAULT_API_URL = 'http://localhost:8085';
+const DEFAULT_PORT = 7081;
+const DEFAULT_API_URL = 'http://localhost:7080';
 
 // Configure the CLI
 program
@@ -73,9 +73,9 @@ program
       // Check if APILama is running
       checkApiLama(apiUrl).then(isRunning => {
         if (isRunning) {
-          console.log(chalk.green('u2713 APILama is running'));
+          console.log(chalk.green('✓ APILama is running'));
         } else {
-          console.log(chalk.yellow('u26a0 APILama is not running. Some features may not work.'));
+          console.log(chalk.yellow('⚠ APILama is not running. Some features may not work.'));
           console.log(chalk.yellow(`  Start APILama with: cd ../apilama && python -m apilama.app --port ${apiUrl.split(':')[2]}`));
         }
         
@@ -94,15 +94,15 @@ program
   .description('Check if APILama is running')
   .option('-a, --api-url <url>', 'URL of the APILama backend', DEFAULT_API_URL)
   .action(async (options) => {
-    const apiUrl = options.api_url;
+    const apiUrl = options.apiUrl;
     
     console.log(chalk.blue('Checking APILama health...'));
     
     const isRunning = await checkApiLama(apiUrl);
     if (isRunning) {
-      console.log(chalk.green('u2713 APILama is running'));
+      console.log(chalk.green('✓ APILama is running'));
     } else {
-      console.log(chalk.red('u2717 APILama is not running'));
+      console.log(chalk.red('✗ APILama is not running'));
       console.log(chalk.yellow(`  Start APILama with: cd ../apilama && python -m apilama.app --port ${apiUrl.split(':')[2]}`));
     }
   });
@@ -113,7 +113,7 @@ program
   .description('List all markdown files')
   .option('-a, --api-url <url>', 'URL of the APILama backend', DEFAULT_API_URL)
   .action(async (options) => {
-    const apiUrl = options.api_url;
+    const apiUrl = options.apiUrl;
     
     console.log(chalk.blue('Listing markdown files...'));
     

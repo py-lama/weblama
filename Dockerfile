@@ -6,6 +6,9 @@ WORKDIR /app
 # Copy package.json and package-lock.json
 COPY package*.json ./
 
+# Copy the bin directory first (needed for postinstall script)
+COPY bin/ ./bin/
+
 # Install dependencies
 RUN npm install
 
