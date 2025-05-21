@@ -540,8 +540,20 @@ def generate_fix():
 @app.route('/api/execute', methods=['POST'])
 def execute_code():
     """Execute Python code blocks in the markdown content."""
+    from weblama.logger import log_api_call
+    log_api_call('execute', 'POST')
+    
     data = request.json
-    markdown_content = data.get('markdown', '')
+    if not data:
+        log_api_call('execute', 'POST', error='No JSON data provided')
+        return jsonify({'error': 'No JSON data provided'}), 400
+        
+    # Accept both 'content' and 'markdown' parameters for backward compatibility
+    markdown_content = data.get('markdown', data.get('content', ''))
+    
+    if not markdown_content:
+        log_api_call('execute', 'POST', error='Missing content for code execution')
+        return jsonify({'error': 'Missing content for code execution'}), 400
     
     # Extract Python code blocks
     code_blocks = extract_python_code_blocks(markdown_content)

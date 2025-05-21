@@ -454,7 +454,7 @@ async function applyFixedCode(blockId, fixType, fixAttempt = 1) {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                code: fixedCode
+                content: fixedCode
             })
         });
         
