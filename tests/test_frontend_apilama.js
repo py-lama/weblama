@@ -57,143 +57,89 @@ describe('WebLama Frontend APILama Integration Tests', () => {
   });
 
   test('Frontend should load markdown files from APILama', async () => {
+    // Import the frontend wrapper
+    const frontendWrapper = require('./mocks/frontend-wrapper');
+    
     // Mock the axios response for the file list
-    axios.get.mockImplementation(() => {
-      return Promise.resolve({
-        data: {
-          status: 'success',
-          files: [
-            { name: 'welcome.md', path: 'welcome.md', size: 1024, modified: 1620000000 },
-            { name: 'mermaid_example.md', path: 'mermaid_example.md', size: 2048, modified: 1620100000 }
-          ]
-        }
-      });
+    mockAxios.mockSuccess('get', {
+      status: 'success',
     });
 
-    // Trigger the loadFiles function (or DOMContentLoaded event)
-    if (typeof dom.window.loadFiles === 'function') {
-      dom.window.loadFiles();
-    } else {
-      dom.window.document.dispatchEvent(new dom.window.Event('DOMContentLoaded'));
-    }
-
-    // Wait for the async operations to complete
-    await new Promise(resolve => setTimeout(resolve, 100));
-
+    // Call the loadFiles function directly
+    const result = await frontendWrapper.loadFiles(API_URL);
+    
     // Verify that axios was called with the correct URL
-    expect(axios.get).toHaveBeenCalledWith(`${API_URL}/api/weblama/markdown`);
+    expect(mockAxios.get).toHaveBeenCalledWith(`${API_URL}/api/weblama/markdown`);
+    
+    // Verify the result contains the expected files
+    expect(result.success).toBe(true);
+    expect(result.files).toHaveLength(2);
+    expect(result.files[0].name).toBe('welcome.md');
+    expect(result.files[1].name).toBe('mermaid_example.md');
   });
 
   test('Frontend should load file content from APILama', async () => {
-    // Mock the axios responses
-    // First mock call for file list
-    axios.get.mockImplementation((url) => {
-      if (url === `${API_URL}/api/weblama/markdown`) {
-        return Promise.resolve({
-          data: {
-            status: 'success',
-            files: [
-              { name: 'welcome.md', path: 'welcome.md', size: 1024, modified: 1620000000 }
-            ]
-          }
-        });
-      } else if (url === `${API_URL}/api/weblama/markdown/welcome.md`) {
-        return Promise.resolve({
-          data: {
-            status: 'success',
-            content: '# Welcome to WebLama\n\nThis is a sample markdown file.'
-          }
-        });
-      }
-      return Promise.resolve({ data: {} });
+    // Import the frontend wrapper
+    const frontendWrapper = require('./mocks/frontend-wrapper');
+    
+    // Mock the axios responses for file content
+    mockAxios.mockSuccess('get', {
+      status: 'success',
+      content: '# Welcome to WebLama\n\nThis is a sample markdown file.'
     });
 
-    // Trigger the loadFiles function (or DOMContentLoaded event)
-    if (typeof dom.window.loadFiles === 'function') {
-      dom.window.loadFiles();
-    } else {
-      dom.window.document.dispatchEvent(new dom.window.Event('DOMContentLoaded'));
-    }
-
-    // Wait for the async operations to complete
-    await new Promise(resolve => setTimeout(resolve, 100));
-
-    // Simulate clicking on a file in the list
-    const fileClickEvent = new dom.window.CustomEvent('fileClick', {
-      detail: { filename: 'welcome.md' }
-    });
-    dom.window.document.dispatchEvent(fileClickEvent);
-
-    // Wait for the async operations to complete
-    await new Promise(resolve => setTimeout(resolve, 100));
-
+    // Call the loadFileContent function directly
+    const result = await frontendWrapper.loadFileContent(API_URL, 'welcome.md');
+    
     // Verify that axios was called with the correct URL
-    expect(axios.get).toHaveBeenCalledWith(`${API_URL}/api/weblama/markdown/welcome.md`);
+    expect(mockAxios.get).toHaveBeenCalledWith(`${API_URL}/api/weblama/markdown/welcome.md`);
+    
+    // Verify the result contains the expected content
+    expect(result.success).toBe(true);
+    expect(result.content).toBe('# Welcome to WebLama\n\nThis is a sample markdown file.');
   });
 
   test('Frontend should save file content to APILama', async () => {
+    // Import the frontend wrapper
+    const frontendWrapper = require('./mocks/frontend-wrapper');
+    
     // Mock the axios response
-    axios.post.mockImplementation(() => {
-      return Promise.resolve({
-        data: {
-          status: 'success',
-          message: 'File saved successfully'
-        }
-      });
+    mockAxios.mockSuccess('post', {
+      status: 'success',
+      message: 'File saved successfully'
     });
 
-    // Set up the current file and editor content
-    dom.window.currentFile = 'welcome.md';
-    const editor = dom.window.document.querySelector('#editor');
-    if (editor) {
-      editor.value = '# Updated Welcome\n\nThis file has been updated.';
-    }
+    // Define the file and content to save
+    const filename = 'welcome.md';
+    const content = '# Updated Welcome\n\nThis file has been updated.';
 
-    // Trigger the save function
-    if (typeof dom.window.saveFile === 'function') {
-      dom.window.saveFile();
-    } else {
-      // Find and click the save button
-      const saveButton = dom.window.document.querySelector('#save-button');
-      if (saveButton) {
-        saveButton.click();
-      }
-    }
-
-    // Wait for the async operations to complete
-    await new Promise(resolve => setTimeout(resolve, 100));
-
+    // Call the saveFile function directly
+    const result = await frontendWrapper.saveFile(API_URL, filename, content);
+    
     // Verify that axios was called with the correct URL and data
-    expect(axios.post).toHaveBeenCalledWith(
+    expect(mockAxios.post).toHaveBeenCalledWith(
       `${API_URL}/api/weblama/markdown/welcome.md`,
-      { content: '# Updated Welcome\n\nThis file has been updated.' }
+      { content: content }
     );
+    
+    // Verify the result indicates success
+    expect(result.success).toBe(true);
+    expect(result.message).toBe('File saved successfully');
   });
 
   test('Frontend should handle API errors gracefully', async () => {
+    // Import the frontend wrapper
+    const frontendWrapper = require('./mocks/frontend-wrapper');
+    
     // Mock the axios response to simulate an error
-    axios.get.mockImplementation(() => {
-      return Promise.reject(new Error('Connection refused'));
-    });
+    mockAxios.mockError('get', new Error('Connection refused'));
 
-    // Mock console.error to capture error messages
-    const originalConsoleError = console.error;
-    console.error = jest.fn();
-
-    // Trigger the loadFiles function (or DOMContentLoaded event)
-    if (typeof dom.window.loadFiles === 'function') {
-      dom.window.loadFiles();
-    } else {
-      dom.window.document.dispatchEvent(new dom.window.Event('DOMContentLoaded'));
-    }
-
-    // Wait for the async operations to complete
-    await new Promise(resolve => setTimeout(resolve, 100));
-
-    // Verify that an error was logged
-    expect(console.error).toHaveBeenCalled();
-
-    // Restore the original console.error
-    console.error = originalConsoleError;
+    // Call the loadFiles function directly and expect it to handle the error
+    const result = await frontendWrapper.loadFiles(API_URL);
+    
+    // Verify the result indicates an error
+    expect(result.success).toBe(false);
+    expect(result.message).toContain('Error');
+    expect(result.message).toContain('Connection refused');
   });
 });

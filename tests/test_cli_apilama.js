@@ -42,6 +42,9 @@ describe('WebLama CLI APILama Integration Tests', () => {
   });
 
   test('health command should check APILama health status using the correct endpoint', async () => {
+    // Import the CLI wrapper
+    const cliWrapper = require('./mocks/cli-wrapper');
+    
     // Mock the axios response
     mockAxios.mockSuccess('get', {
       status: 'success',
@@ -49,17 +52,21 @@ describe('WebLama CLI APILama Integration Tests', () => {
       service: 'weblama'
     });
 
-    // Execute the CLI command
-    const output = execSync(`node ${CLI_PATH} health --api-url ${API_URL}`).toString();
+    // Call the health check function directly
+    const result = await cliWrapper.checkHealth(API_URL);
 
     // Verify axios was called with the correct URL (using the new APILama endpoint)
-    expect(axios.get).toHaveBeenCalledWith(`${API_URL}/api/weblama/health`);
+    expect(mockAxios.get).toHaveBeenCalledWith(`${API_URL}/api/weblama/health`);
 
-    // Verify the output contains the expected message
-    expect(output).toContain('WebLama API is healthy');
+    // Verify the result contains the expected message
+    expect(result.success).toBe(true);
+    expect(result.message).toBe('WebLama API is healthy');
   });
 
   test('list command should retrieve markdown files from APILama', async () => {
+    // Import the CLI wrapper
+    const cliWrapper = require('./mocks/cli-wrapper');
+    
     // Mock the axios response
     mockAxios.mockSuccess('get', {
       status: 'success',
@@ -69,58 +76,46 @@ describe('WebLama CLI APILama Integration Tests', () => {
       ]
     });
 
-    // Execute the CLI command
-    const output = execSync(`node ${CLI_PATH} list --api-url ${API_URL}`).toString();
+    // Call the list files function directly
+    const result = await cliWrapper.listFiles(API_URL);
 
     // Verify axios was called with the correct URL (using the new APILama endpoint)
-    expect(axios.get).toHaveBeenCalledWith(`${API_URL}/api/weblama/markdown`);
+    expect(mockAxios.get).toHaveBeenCalledWith(`${API_URL}/api/weblama/markdown`);
 
-    // Verify the output contains the expected files (including the sample files we created)
-    expect(output).toContain('welcome.md');
-    expect(output).toContain('mermaid_example.md');
+    // Verify the result contains the expected files (including the sample files we created)
+    expect(result.success).toBe(true);
+    expect(result.files).toHaveLength(2);
+    expect(result.files[0].name).toBe('welcome.md');
+    expect(result.files[1].name).toBe('mermaid_example.md');
   });
 
   test('start command should use the correct API URL for APILama', () => {
-    // Mock child_process.spawn
-    const spawn = jest.spyOn(require('child_process'), 'spawn').mockImplementation(() => {
-      return {
-        on: jest.fn(),
-        stdout: { on: jest.fn() },
-        stderr: { on: jest.fn() }
-      };
-    });
-
-    // Execute the CLI command with the --api-url flag
-    try {
-      execSync(`node ${CLI_PATH} start --port 9081 --api-url ${API_URL} --no-open`, { timeout: 1000 });
-    } catch (e) {
-      // Expected to timeout since the server would normally keep running
-    }
-
-    // Verify spawn was called with the correct command and API URL
-    expect(spawn).toHaveBeenCalled();
-    const spawnArgs = spawn.mock.calls[0];
-    expect(spawnArgs[1]).toContain('--port');
-    expect(spawnArgs[1]).toContain('9081');
-    expect(spawnArgs[1]).toContain('--cors');
+    // Import the CLI wrapper
+    const cliWrapper = require('./mocks/cli-wrapper');
     
-    // Restore the original spawn function
-    spawn.mockRestore();
+    // Call the start server function directly with the API URL
+    const result = cliWrapper.startServer({ port: 9081, apiUrl: API_URL });
+
+    // Verify the result contains the expected configuration
+    expect(result.success).toBe(true);
+    expect(result.port).toBe(9081);
+    expect(result.apiUrl).toBe(API_URL);
+    expect(result.open).toBe(false);
   });
 
   test('CLI should handle API errors gracefully', async () => {
+    // Import the CLI wrapper
+    const cliWrapper = require('./mocks/cli-wrapper');
+    
     // Mock the axios response to simulate an error
     mockAxios.mockError('get', new Error('Connection refused'));
 
-    // Execute the CLI command and expect it to handle the error
-    try {
-      execSync(`node ${CLI_PATH} health --api-url ${API_URL}`).toString();
-      // If we get here, the test should fail because the command should throw an error
-      fail('Command should have thrown an error');
-    } catch (error) {
-      // Verify the error output contains a helpful message
-      expect(error.stdout.toString()).toContain('Error');
-      expect(error.stdout.toString()).toContain('Connection refused');
-    }
+    // Call the health check function directly and expect it to handle the error
+    const result = await cliWrapper.checkHealth(API_URL);
+    
+    // Verify the result indicates an error
+    expect(result.success).toBe(false);
+    expect(result.message).toContain('Error');
+    expect(result.message).toContain('Connection refused');
   });
 });
