@@ -238,3 +238,24 @@ class GitFormatter(BaseFormatter):
             table.add_row(commit['hash'][:7], commit['message'], commit['author'], date)
         
         self.console.print(table)
+
+
+class TableFormatter(BaseFormatter):
+    """Formatter for displaying tabular data using rich.Table."""
+    def format_table(self, headers, rows):
+        if not self.use_rich:
+            # Fallback: simple text table
+            col_widths = [max(len(str(cell)) for cell in col) for col in zip(headers, *rows)]
+            header_row = " | ".join(str(h).ljust(w) for h, w in zip(headers, col_widths))
+            sep = "-+-".join('-' * w for w in col_widths)
+            lines = [header_row, sep]
+            for row in rows:
+                lines.append(" | ".join(str(cell).ljust(w) for cell, w in zip(row, col_widths)))
+            print("\n".join(lines))
+            return
+        table = Table(show_header=True, header_style="bold magenta")
+        for header in headers:
+            table.add_column(str(header))
+        for row in rows:
+            table.add_row(*[str(cell) for cell in row])
+        self.console.print(table)

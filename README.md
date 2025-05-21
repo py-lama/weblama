@@ -1,6 +1,6 @@
 # WebLama
 
-A web-based Markdown editor with syntax highlighting, Mermaid diagram support, automatic Python code execution and fixing, and Git integration.
+A command-line tool with syntax highlighting, Mermaid diagram support, automatic Python code execution and fixing, and Git integration.
 
 ![WebLama.png](weblama.png)
 
@@ -28,60 +28,61 @@ pip install -e .
 
 ## Usage
 
-### Starting the Web Server
+**WebLama is a command-line tool, not a web server.**
+
+To use WebLama, run one of the following commands:
 
 ```bash
-weblama
-
-# Specify host and port
-weblama --host 0.0.0.0 --port 8080
-
-# Enable debug mode
-weblama --debug
+weblama list           # List available files
+weblama get <file>     # Get the content of a file
+weblama models         # List available models
+weblama query --help   # Query a model (see options)
 ```
 
-Then open your browser and navigate to http://localhost:5000 (or the specified host/port).
+Global options:
+- `-v`, `--verbose`         Enable verbose output
+- `--api-url <URL>`         Set the WebLama API URL
+- `--no-color`              Disable colored output
+- `--pybox-api-url <URL>`   Set PyBox API URL
+- `--pyllm-api-url <URL>`   Set PyLLM API URL
+- `--pylama-api-url <URL>`  Set PyLama API URL
 
-### Using the Editor
+**Do not use `--host` or `--port` with the `weblama` CLI.**
+These options are not valid for CLI usage and will result in an error like:
 
-1. **Creating and Editing Documents**
-   - Write Markdown content in the editor panel on the left
-   - See the rendered preview in real-time on the right
-   - Use the toolbar buttons for common formatting options
-   - Enter a filename in the top bar and click "Save" to save your document
+```
+weblama: error: argument command: invalid choice: '0.0.0.0' (choose from ...)
+```
 
-2. **Working with Python Code Blocks**
-   - Create Python code blocks using triple backticks and the python language identifier:
-     ````
-     ```python
-     print("Hello, World!")
-     ```
-     ````
-   - All Python code blocks are automatically executed when rendered
-   - Results appear in the "Console" tab below each code block
-   - If there are errors, fixed versions are automatically generated and applied
-   - You can manually run code again by clicking the "Run" button
+If you want to run a server, see the developer documentation for running the backend Flask app directly.
 
-3. **Using the Git Integration**
-   - All changes are automatically tracked in Git
-   - Fixed code is automatically committed with descriptive messages
-   - Click the "History" button to view the commit history for the current file
-   - Use the "Publish" button to push your repository to GitHub, GitLab, or Bitbucket
-   - You can compare different versions of your document from the history view
+## Makefile Usage
 
-4. **Creating Mermaid Diagrams**
-   - Use Mermaid syntax within code blocks to create diagrams:
-     ````
-     ```mermaid
-     graph TD;
-         A-->B;
-         A-->C;
-         B-->D;
-         C-->D;
-     ```
-     ````
-   - Diagrams are automatically rendered in the preview pane
-   - Changes to diagrams are tracked in Git like any other content
+You can use the included `Makefile` for common tasks:
+
+- **Start the Web UI on port 8081 (default):**
+  ```bash
+  make web
+  ```
+  This starts the WebLama web application. Open your browser at http://localhost:8081
+
+- **Start the Web UI on a custom port:**
+  ```bash
+  make web PORT=8090
+  ```
+  This starts the app on port 8090.
+
+- **Show CLI usage help:**
+  ```bash
+  make cli
+  ```
+
+- **Run tests:**
+  ```bash
+  make test
+  ```
+
+**Note:** The `weblama` CLI and the Web UI are separate. Use the Makefile to start the web server for browser access.
 
 ## Dependencies
 
@@ -142,10 +143,6 @@ weblama/
 ```bash
 pytest tests/
 ```
-
-## License
-
-MIT License
 
 ## Contributing
 

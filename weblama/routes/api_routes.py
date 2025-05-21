@@ -17,6 +17,28 @@ from weblama.core.code_execution import execute_code_with_pybox, fix_code_with_p
 api_routes = Blueprint('api_routes', __name__)
 
 
+@api_routes.route('/health', methods=['GET'])
+def health_check():
+    """Check if the WebLama API is running.
+    
+    This endpoint provides a simple health check to verify that the WebLama service is operational.
+    It can be used by monitoring systems to check the service status.
+    """
+    log_api_call('health', 'GET')
+    
+    # Get version from package if available
+    try:
+        from weblama import __version__
+    except ImportError:
+        __version__ = '0.1.0'  # Default version if not available
+    
+    return jsonify({
+        'status': 'healthy',
+        'version': __version__,
+        'service': 'WebLama API'
+    })
+
+
 @api_routes.route('/api/execute', methods=['POST'])
 def execute_code():
     """Execute Python code blocks in the markdown content."""
