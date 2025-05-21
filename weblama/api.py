@@ -59,9 +59,11 @@ def get_file(file_path):
 @api.route('/api/files/<path:file_path>', methods=['PUT'])
 def save_file(file_path):
     """Save content to a specific file"""
+    logger.info(f'API call: Save file {file_path}')
     try:
         data = request.json
         if not data or 'content' not in data:
+            logger.warning(f'Missing content for file {file_path}')
             return jsonify({'status': 'error', 'error': 'Content is required'}), 400
         
         content = data['content']
@@ -70,25 +72,36 @@ def save_file(file_path):
         # Save the file with git integration
         git.save_file(content, file_path, commit_message)
         
+        log_file_operation('save', file_path, True)
+        log_git_operation('commit', f'{file_path}: {commit_message}', True)
+        
         return jsonify({'status': 'success', 'message': f'File {file_path} saved successfully'})
     except Exception as e:
+        logger.error(f'Error saving file {file_path}: {str(e)}')
+        log_file_operation('save', file_path, False, str(e))
         return jsonify({'status': 'error', 'error': str(e)}), 500
 
 @api.route('/api/files', methods=['POST'])
 def create_file():
     """Create a new file"""
+    logger.info('API call: Create new file')
     try:
         data = request.json
         if not data or 'path' not in data or 'content' not in data:
+            logger.warning('Missing path or content for new file')
             return jsonify({'status': 'error', 'error': 'Path and content are required'}), 400
         
         file_path = data['path']
         content = data['content']
         commit_message = data.get('commit_message', f'Create {file_path}')
         
+        logger.info(f'Creating new file: {file_path}')
+        
         # Check if file already exists
         full_path = os.path.join(git.repo_path, file_path)
         if os.path.exists(full_path):
+            logger.warning(f'File already exists: {file_path}')
+            log_file_operation('create', file_path, False, 'File already exists')
             return jsonify({'status': 'error', 'error': 'File already exists'}), 409
         
         # Create directory if it doesn't exist
@@ -97,8 +110,13 @@ def create_file():
         # Save the file with git integration
         git.save_file(content, file_path, commit_message)
         
+        log_file_operation('create', file_path, True)
+        log_git_operation('commit', f'Created {file_path}', True)
+        
         return jsonify({'status': 'success', 'message': f'File {file_path} created successfully'})
     except Exception as e:
+        logger.error(f'Error creating file: {str(e)}')
+        log_file_operation('create', file_path if 'file_path' in locals() else 'unknown', False, str(e))
         return jsonify({'status': 'error', 'error': str(e)}), 500
 
 @api.route('/api/execute', methods=['POST'])
