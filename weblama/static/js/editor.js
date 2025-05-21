@@ -111,6 +111,9 @@ mermaid.initialize({
     flowchart: { curve: 'basis' }
 });
 
+// Store execution history for each code block
+const codeBlockHistory = {};
+
 // Update preview function
 function updatePreview() {
     const markdownContent = editor.getValue();
@@ -124,6 +127,9 @@ function updatePreview() {
         hljs.highlightElement(block);
     });
     
+    // Convert Python code blocks to tabbed interfaces
+    convertPythonCodeBlocks();
+    
     // Render Mermaid diagrams
     try {
         mermaid.init(undefined, document.querySelectorAll('.mermaid'));
@@ -132,10 +138,306 @@ function updatePreview() {
     }
 }
 
+// Convert Python code blocks to tabbed interfaces
+function convertPythonCodeBlocks() {
+    let blockIndex = 0;
+    document.querySelectorAll('#preview pre code.language-python').forEach((codeBlock) => {
+        const preElement = codeBlock.parentElement;
+        const codeContent = codeBlock.textContent;
+        
+        // Create a unique ID for this code block
+        const blockId = `python-block-${blockIndex}`;
+        
+        // Create the tabbed interface container
+        const container = document.createElement('div');
+        container.className = 'code-block-container';
+        container.dataset.blockId = blockId;
+        
+        // Create the tabs
+        const tabs = document.createElement('div');
+        tabs.className = 'code-block-tabs';
+        tabs.innerHTML = `
+            <div class="code-block-tab active" data-tab="code" onclick="switchTab('${blockId}', 'code')">Code</div>
+            <div class="code-block-tab" data-tab="console" onclick="switchTab('${blockId}', 'console')">Console</div>
+            <button class="execute-button" onclick="executeCodeBlock('${blockId}')">Run</button>
+        `;
+        
+        // Create the content panels
+        const codePanel = document.createElement('div');
+        codePanel.className = 'code-block-content active';
+        codePanel.dataset.tab = 'code';
+        codePanel.innerHTML = `<pre><code class="language-python">${escapeHtml(codeContent)}</code></pre>`;
+        
+        const consolePanel = document.createElement('div');
+        consolePanel.className = 'code-block-content';
+        consolePanel.dataset.tab = 'console';
+        consolePanel.innerHTML = `
+            <div class="code-block-output">Click "Run" to execute this code block.</div>
+            <div class="code-block-history"></div>
+        `;
+        
+        // Add the panels to the container
+        container.appendChild(tabs);
+        container.appendChild(codePanel);
+        container.appendChild(consolePanel);
+        
+        // Replace the original pre element with the tabbed interface
+        preElement.parentNode.replaceChild(container, preElement);
+        
+        // Initialize history for this block if not exists
+        if (!codeBlockHistory[blockId]) {
+            codeBlockHistory[blockId] = [];
+        }
+        
+        // Apply syntax highlighting to the code in the code panel
+        hljs.highlightElement(codePanel.querySelector('code'));
+        
+        blockIndex++;
+    });
+}
+
+// Switch between tabs
+function switchTab(blockId, tabName) {
+    const container = document.querySelector(`.code-block-container[data-block-id="${blockId}"]`);
+    
+    // Update active tab
+    container.querySelectorAll('.code-block-tab').forEach(tab => {
+        if (tab.dataset.tab === tabName) {
+            tab.classList.add('active');
+        } else {
+            tab.classList.remove('active');
+        }
+    });
+    
+    // Update active content panel
+    container.querySelectorAll('.code-block-content').forEach(panel => {
+        if (panel.dataset.tab === tabName) {
+            panel.classList.add('active');
+        } else {
+            panel.classList.remove('active');
+        }
+    });
+}
+
+// Execute a specific code block
+async function executeCodeBlock(blockId) {
+    const container = document.querySelector(`.code-block-container[data-block-id="${blockId}"]`);
+    const codePanel = container.querySelector('.code-block-content[data-tab="code"]');
+    const consolePanel = container.querySelector('.code-block-content[data-tab="console"]');
+    const outputElement = consolePanel.querySelector('.code-block-output');
+    const historyElement = consolePanel.querySelector('.code-block-history');
+    
+    // Get the code content
+    const codeContent = codePanel.querySelector('code').textContent;
+    
+    // Show loading state
+    outputElement.innerHTML = 'Executing code...';
+    switchTab(blockId, 'console');
+    
+    try {
+        // Send the code to the server for execution
+        const response = await fetch('/api/execute', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ markdown: `\`\`\`python\n${codeContent}\n\`\`\`` })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Server error: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        const result = data.results[0]; // We only sent one code block
+        
+        // Add to history
+        const timestamp = new Date().toLocaleTimeString();
+        codeBlockHistory[blockId].unshift({
+            timestamp,
+            success: result.success,
+            output: result.success ? result.output : result.error,
+            fixed_code: result.fixed_code
+        });
+        
+        // Update history display
+        updateHistoryDisplay(blockId, historyElement);
+        
+        if (result.success) {
+            // Successful execution
+            outputElement.innerHTML = escapeHtml(result.output) || 'No output';
+        } else {
+            // Failed execution
+            outputElement.innerHTML = `<div class="code-block-error">${escapeHtml(result.error)}</div>`;
+            
+            // Add fixed code tabs if available
+            if (result.fixed_code) {
+                // Check if the fixed1 tab already exists
+                let tabElement = container.querySelector('.code-block-tab[data-tab="fixed1"]');
+                let panelElement = container.querySelector('.code-block-content[data-tab="fixed1"]');
+                
+                // Create the tab and panel if they don't exist
+                if (!tabElement) {
+                    // Add the tab
+                    tabElement = document.createElement('div');
+                    tabElement.className = 'code-block-tab';
+                    tabElement.dataset.tab = 'fixed1';
+                    tabElement.textContent = 'Fixed v1';
+                    tabElement.onclick = function() { switchTab(blockId, 'fixed1'); };
+                    
+                    // Insert tab before the Run button
+                    const executeButton = container.querySelector('.execute-button');
+                    container.querySelector('.code-block-tabs').insertBefore(tabElement, executeButton);
+                    
+                    // Create the panel
+                    panelElement = document.createElement('div');
+                    panelElement.className = 'code-block-content';
+                    panelElement.dataset.tab = 'fixed1';
+                    container.appendChild(panelElement);
+                }
+                
+                // Update the panel content
+                panelElement.innerHTML = `
+                    <pre><code class="language-python">${escapeHtml(result.fixed_code)}</code></pre>
+                    <button class="execute-button" onclick="applyFixedCode('${blockId}', 'fixed1')">Apply Fix</button>
+                `;
+                // Apply syntax highlighting
+                const codeElement = panelElement.querySelector('code');
+                hljs.highlightElement(codeElement);
+                // Ensure proper formatting
+                codeElement.style.whiteSpace = 'pre';
+            }
+            
+            // Add alternative fixed version if available
+            if (result.fixed_code_alt) {
+                // Check if the fixed2 tab already exists
+                let tabElement = container.querySelector('.code-block-tab[data-tab="fixed2"]');
+                let panelElement = container.querySelector('.code-block-content[data-tab="fixed2"]');
+                
+                // Create the tab and panel if they don't exist
+                if (!tabElement) {
+                    // Add the tab
+                    tabElement = document.createElement('div');
+                    tabElement.className = 'code-block-tab';
+                    tabElement.dataset.tab = 'fixed2';
+                    tabElement.textContent = 'Fixed v2';
+                    tabElement.onclick = function() { switchTab(blockId, 'fixed2'); };
+                    
+                    // Insert tab before the Run button
+                    const executeButton = container.querySelector('.execute-button');
+                    container.querySelector('.code-block-tabs').insertBefore(tabElement, executeButton);
+                    
+                    // Create the panel
+                    panelElement = document.createElement('div');
+                    panelElement.className = 'code-block-content';
+                    panelElement.dataset.tab = 'fixed2';
+                    container.appendChild(panelElement);
+                }
+                
+                // Update the panel content
+                panelElement.innerHTML = `
+                    <pre><code class="language-python">${escapeHtml(result.fixed_code_alt)}</code></pre>
+                    <button class="execute-button" onclick="applyFixedCode('${blockId}', 'fixed2')">Apply Fix</button>
+                `;
+                hljs.highlightElement(panelElement.querySelector('code'));
+            }
+        }
+        
+    } catch (error) {
+        console.error('Error executing code:', error);
+        outputElement.innerHTML = `<div class="code-block-error">${error.message}</div>`;
+    }
+}
+
+// Update history display
+function updateHistoryDisplay(blockId, historyElement) {
+    const history = codeBlockHistory[blockId];
+    
+    if (history.length === 0) {
+        historyElement.innerHTML = '<div class="no-history">No execution history yet.</div>';
+        return;
+    }
+    
+    let historyHtml = '<h4>Execution History</h4>';
+    
+    history.forEach((item, index) => {
+        historyHtml += `
+            <div class="history-item ${item.success ? 'success' : 'error'}">
+                <div class="history-timestamp">${item.timestamp}</div>
+                <div class="history-output">${escapeHtml(item.output)}</div>
+            </div>
+        `;
+        
+        // Limit history display to last 5 executions
+        if (index >= 4) return;
+    });
+    
+    historyElement.innerHTML = historyHtml;
+}
+
+// Apply fixed code
+function applyFixedCode(blockId, fixedVersion) {
+    const container = document.querySelector(`.code-block-container[data-block-id="${blockId}"]`);
+    const fixedPanel = container.querySelector(`.code-block-content[data-tab="${fixedVersion}"]`);
+    const codePanel = container.querySelector('.code-block-content[data-tab="code"]');
+    
+    // Get the fixed code
+    const fixedCode = fixedPanel.querySelector('code').textContent;
+    
+    // Update the code panel with the fixed code
+    codePanel.innerHTML = `<pre><code class="language-python">${escapeHtml(fixedCode)}</code></pre>`;
+    hljs.highlightElement(codePanel.querySelector('code'));
+    
+    // Switch to the code tab
+    switchTab(blockId, 'code');
+    
+    // Update the editor content
+    updateEditorWithFixedCode(blockId, fixedCode);
+}
+
+// Update the editor content with fixed code
+function updateEditorWithFixedCode(blockId, fixedCode) {
+    const markdownContent = editor.getValue();
+    const codeBlocks = extractPythonCodeBlocks(markdownContent);
+    
+    // Find the index of the code block to update
+    const blockIndex = parseInt(blockId.split('-').pop());
+    
+    if (blockIndex < codeBlocks.length) {
+        const block = codeBlocks[blockIndex];
+        const startPos = block.startPos;
+        const endPos = block.endPos;
+        
+        // Replace the code block in the editor
+        const newContent = markdownContent.substring(0, startPos) + 
+                          '```python\n' + fixedCode + '\n```' + 
+                          markdownContent.substring(endPos);
+        
+        editor.setValue(newContent);
+    }
+}
+
+// Extract Python code blocks from markdown content
+function extractPythonCodeBlocks(markdownContent) {
+    const pattern = /```python\n([\s\S]*?)\n```/g;
+    const blocks = [];
+    let match;
+    
+    while ((match = pattern.exec(markdownContent)) !== null) {
+        blocks.push({
+            code: match[1],
+            startPos: match.index,
+            endPos: match.index + match[0].length
+        });
+    }
+    
+    return blocks;
+}
+
 // Initial preview update
 updatePreview();
 
-// Execute Python code blocks
+// Execute all Python code blocks
 document.getElementById('execute-btn').addEventListener('click', async () => {
     const markdownContent = editor.getValue();
     const resultsContainer = document.getElementById('results-container');
@@ -143,7 +445,7 @@ document.getElementById('execute-btn').addEventListener('click', async () => {
     
     // Show loading state
     resultsContainer.classList.remove('hidden');
-    resultsElement.innerHTML = '<div class="loading">Executing code blocks...</div>';
+    resultsElement.innerHTML = '<div class="loading">Executing all code blocks...</div>';
     
     try {
         // Send markdown content to server for execution

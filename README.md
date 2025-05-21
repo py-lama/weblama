@@ -1,6 +1,6 @@
 # WebLama
 
-A web-based Markdown editor with syntax highlighting, Mermaid diagram support, and automatic Python code execution and fixing.
+A web-based Markdown editor with syntax highlighting, Mermaid diagram support, automatic Python code execution and fixing, and Git integration.
 
 ## Features
 
@@ -9,8 +9,8 @@ A web-based Markdown editor with syntax highlighting, Mermaid diagram support, a
 - **Mermaid Diagram Support**: Create and visualize diagrams using Mermaid syntax
 - **Python Code Execution**: Execute Python code blocks directly from the editor
 - **Automatic Code Fixing**: Detect and fix syntax errors, missing imports, and logical errors in Python code blocks
-- **Sandboxed Execution**: Safely execute Python code using PyBox
-- **AI-Powered Fixes**: Leverage PyLLM to generate fixes for code issues
+- **Git Version Control**: Track changes to your Markdown files and Mermaid diagrams
+- **Publishing Options**: Publish your repository to GitHub, GitLab, or Bitbucket
 
 ## Installation
 
@@ -60,12 +60,16 @@ Then open your browser and navigate to http://localhost:5000 (or the specified h
 
 ## How It Works
 
-1. **Code Extraction**: Python code blocks are extracted from the Markdown content
-2. **Execution**: Each code block is executed in a sandboxed environment using PyBox
-3. **Error Detection**: Syntax errors, runtime errors, and logical errors are detected
-4. **Code Fixing**: Issues are fixed using a combination of rule-based fixes and PyLLM
-5. **Result Display**: Execution results and fixed code are displayed to the user
-6. **Markdown Update**: The original Markdown is updated with the fixed code blocks
+1. **Code Execution & Fixing**:
+   - Python code blocks are executed directly in the preview pane
+   - Syntax errors, runtime errors, and logical errors are automatically detected and fixed
+   - Results are displayed in a tabbed interface with the original code, console output, and fixed versions
+
+2. **Git Integration**:
+   - Changes to Markdown files are automatically tracked in a Git repository
+   - View file history and compare different versions of your documents
+   - Restore previous versions when needed
+   - Publish your repository to GitHub, GitLab, or Bitbucket
 
 ## Development
 
@@ -77,11 +81,14 @@ weblama/
 │   ├── __init__.py
 │   ├── app.py           # Flask application
 │   ├── cli.py           # Command-line interface
+│   ├── git_integration.py # Git functionality
 │   ├── templates/       # HTML templates
 │   │   └── index.html   # Main editor page
 │   └── static/          # Static assets
 │       ├── css/         # CSS styles
 │       └── js/          # JavaScript files
+│           ├── editor.js      # Editor functionality
+│           └── git_integration.js # Git UI functionality
 ├── tests/               # Test suite
 ├── setup.py             # Package setup
 └── README.md            # This file

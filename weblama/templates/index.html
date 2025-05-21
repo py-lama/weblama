@@ -21,6 +21,8 @@
             <input type="text" id="filename" placeholder="document.md" value="document.md">
             <button id="save-btn">Save</button>
             <button id="execute-btn">Execute Python Code Blocks</button>
+            <button id="git-history-btn">Git History</button>
+            <button id="publish-btn">Publish</button>
         </div>
     </div>
     
@@ -40,6 +42,76 @@
         <div id="results"></div>
     </div>
     
+    <!-- Git History Modal -->
+    <div id="git-history-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Git History</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="git-history-list">
+                    <h3>Commit History</h3>
+                    <div id="git-commits"></div>
+                </div>
+                <div class="git-history-content">
+                    <h3>Version Comparison</h3>
+                    <div id="git-version-comparison"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Publish Modal -->
+    <div id="publish-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Publish Repository</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="publish-form">
+                    <div class="form-group">
+                        <label for="provider">Git Provider:</label>
+                        <select id="provider">
+                            <option value="github">GitHub</option>
+                            <option value="gitlab">GitLab</option>
+                            <option value="bitbucket">Bitbucket</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="repo-name">Repository Name:</label>
+                        <input type="text" id="repo-name" placeholder="weblama-repository" value="weblama-repository">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="username">Username:</label>
+                        <input type="text" id="username" placeholder="Your username">
+                    </div>
+                    
+                    <div class="form-group github-gitlab">
+                        <label for="token">Access Token:</label>
+                        <input type="password" id="token" placeholder="Your personal access token">
+                    </div>
+                    
+                    <div class="form-group gitlab-only" style="display: none;">
+                        <label for="gitlab-url">GitLab URL:</label>
+                        <input type="text" id="gitlab-url" placeholder="https://gitlab.com" value="https://gitlab.com">
+                    </div>
+                    
+                    <div class="form-group bitbucket-only" style="display: none;">
+                        <label for="password">App Password:</label>
+                        <input type="password" id="password" placeholder="Your app password">
+                    </div>
+                    
+                    <button id="publish-repo-btn">Publish</button>
+                </div>
+                <div id="publish-result" class="publish-result"></div>
+            </div>
+        </div>
+    </div>
+    
     <!-- CodeMirror scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/markdown/markdown.min.js"></script>
@@ -56,5 +128,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/languages/python.min.js"></script>
     <!-- Custom scripts -->
     <script src="/static/js/editor.js"></script>
+    <script src="/static/js/git_integration.js"></script>
 </body>
 </html>
