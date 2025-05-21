@@ -11,8 +11,8 @@ const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
 
-// Mock axios for testing
-jest.mock('axios');
+// Import our mock implementation
+const mockAxios = require('./mocks/axios');
 
 // Base URL for the APILama service
 const API_URL = 'http://localhost:9080';
@@ -44,11 +44,10 @@ describe('WebLama Frontend APILama Integration Tests', () => {
   let dom;
 
   beforeEach(() => {
-    // Reset all mocks before each test
-    jest.resetAllMocks();
-    
-    // Setup a fresh DOM for each test
+    // Set up a fresh DOM for each test
     dom = setupDOM();
+    // Reset the mock before each test
+    mockAxios.reset();
   });
 
   afterEach(() => {
@@ -63,6 +62,10 @@ describe('WebLama Frontend APILama Integration Tests', () => {
     // Mock the axios response for the file list
     mockAxios.mockSuccess('get', {
       status: 'success',
+      files: [
+        { name: 'welcome.md', path: 'welcome.md', size: 1024, modified: 1620000000 },
+        { name: 'mermaid_example.md', path: 'mermaid_example.md', size: 2048, modified: 1620100000 }
+      ]
     });
 
     // Call the loadFiles function directly

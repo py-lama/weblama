@@ -10,8 +10,11 @@ RUN npm install
 # Bundle app source
 COPY . .
 
+# Set environment variable for port
+ENV PORT=80
+
 # Expose port
 EXPOSE 80
 
-# Start the application
-CMD [ "node", "server.js" ]
+# Start the application using the npm start script
+CMD [ "npm", "start" ]

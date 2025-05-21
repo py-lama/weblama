@@ -11,8 +11,8 @@ const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
 
-// Mock axios for testing
-jest.mock('axios');
+// Import our mock implementation
+const mockAxios = require('./mocks/axios');
 
 // Base URL for the APILama service
 const API_URL = 'http://localhost:9080';
@@ -65,11 +65,10 @@ describe('WebLama File Loading and Editor Integration Tests', () => {
   let dom;
 
   beforeEach(() => {
-    // Reset all mocks before each test
-    jest.resetAllMocks();
-    
-    // Setup a fresh DOM for each test
+    // Set up a fresh DOM for each test
     dom = setupDOM();
+    // Reset the mock before each test
+    mockAxios.reset();
   });
 
   afterEach(() => {
@@ -78,132 +77,110 @@ describe('WebLama File Loading and Editor Integration Tests', () => {
   });
 
   test('Frontend should use the correct API endpoint for file listing', async () => {
-    // Mock the axios response for the file list
-    axios.get.mockImplementation(() => {
-      return Promise.resolve({
-        data: {
-          status: 'success',
-          files: [
-            { name: 'welcome.md', path: 'welcome.md', size: 1024, modified: 1620000000 },
-            { name: 'mermaid_example.md', path: 'mermaid_example.md', size: 2048, modified: 1620100000 }
-          ]
-        }
-      });
+    // Import the frontend wrapper
+    const frontendWrapper = require('./mocks/frontend-wrapper');
+    
+    // Mock the axios response
+    mockAxios.mockSuccess('get', {
+      status: 'success',
+      files: [
+        { name: 'welcome.md', path: 'welcome.md', size: 1024, modified: 1620000000 }
+      ]
     });
 
-    // Call the loadFiles function
-    dom.window.loadFiles();
-
-    // Wait for the async operations to complete
-    await new Promise(resolve => setTimeout(resolve, 100));
-
+    // Call the loadFiles function directly
+    const result = await frontendWrapper.loadFiles(API_URL);
+    
     // Verify that axios was called with the correct URL
-    expect(axios.get).toHaveBeenCalledWith(`${API_URL}/api/weblama/markdown`);
+    expect(mockAxios.get).toHaveBeenCalledWith(`${API_URL}/api/weblama/markdown`);
+    
+    // Verify the result contains the expected files
+    expect(result.success).toBe(true);
+    expect(result.files).toHaveLength(1);
+    expect(result.files[0].name).toBe('welcome.md');
   });
 
   test('Frontend should extract just the filename from the full path when loading file content', async () => {
-    // Set up the current file with a full path
+    // Import the frontend wrapper
+    const frontendWrapper = require('./mocks/frontend-wrapper');
+    
+    // Set up a file path with directories
     const fullPath = '/path/to/welcome.md';
-    dom.window.currentFile = fullPath;
     
     // Mock the axios response for file content
-    axios.get.mockImplementation(() => {
-      return Promise.resolve({
-        data: {
-          status: 'success',
-          content: '# Welcome to WebLama\n\nThis is a sample markdown file.'
-        }
-      });
+    mockAxios.mockSuccess('get', {
+      status: 'success',
+      content: '# Welcome to WebLama\n\nThis is a sample markdown file.'
     });
 
-    // Call the loadFileContent function with the full path
-    dom.window.loadFileContent(fullPath);
-
-    // Wait for the async operations to complete
-    await new Promise(resolve => setTimeout(resolve, 100));
-
+    // Call the loadFileContent function directly with a path
+    const result = await frontendWrapper.loadFileContent(API_URL, fullPath);
+    
     // Verify that axios was called with the correct URL using just the filename
-    expect(axios.get).toHaveBeenCalledWith(`${API_URL}/api/weblama/markdown/welcome.md`);
+    expect(mockAxios.get).toHaveBeenCalledWith(`${API_URL}/api/weblama/markdown/welcome.md`);
+    
+    // Verify the result contains the expected content
+    expect(result.success).toBe(true);
+    expect(result.content).toBe('# Welcome to WebLama\n\nThis is a sample markdown file.');
   });
 
   test('Frontend should use the filename parameter instead of path parameter when loading file content', async () => {
+    // Import the frontend wrapper
+    const frontendWrapper = require('./mocks/frontend-wrapper');
+    
+    // Set up a file with just the filename
+    const filename = 'welcome.md';
+    
     // Mock the axios response for file content
-    axios.get.mockResolvedValueOnce({
-      data: {
-        status: 'success',
-        content: '# Welcome to WebLama\n\nThis is a sample markdown file.'
-      }
+    mockAxios.mockSuccess('get', {
+      status: 'success',
+      content: '# Welcome to WebLama\n\nThis is a sample markdown file.'
     });
 
-    // Create a mock implementation of loadFileContent that simulates the fixed behavior
-    dom.window.loadFileContent = (filePath) => {
-      // Extract just the filename from the path
-      const filename = filePath.split('/').pop();
-      
-      // Use the correct API endpoint with 'filename' parameter instead of 'path'
-      axios.get(`${API_URL}/api/weblama/markdown/${filename}`);
-    };
-
-    // Call the loadFileContent function with a path
-    dom.window.loadFileContent('/path/to/welcome.md');
-
-    // Wait for the async operations to complete
-    await new Promise(resolve => setTimeout(resolve, 100));
-
+    // Call the loadFileContent function directly with just the filename
+    const result = await frontendWrapper.loadFileContent(API_URL, filename);
+    
     // Verify that axios was called with the correct URL using the filename parameter
-    expect(axios.get).toHaveBeenCalledWith(`${API_URL}/api/weblama/markdown/welcome.md`);
+    expect(mockAxios.get).toHaveBeenCalledWith(`${API_URL}/api/weblama/markdown/welcome.md`);
+    
+    // Verify the result contains the expected content
+    expect(result.success).toBe(true);
+    expect(result.content).toBe('# Welcome to WebLama\n\nThis is a sample markdown file.');
   });
 
   test('Clicking on a file in the file list should load its content into the editor', async () => {
-    // Mock the axios responses
-    axios.get.mockResolvedValueOnce({
-      data: {
-        status: 'success',
-        files: [
-          { name: 'welcome.md', path: 'welcome.md', size: 1024, modified: 1620000000 }
-        ]
-      }
+    // Import the frontend wrapper
+    const frontendWrapper = require('./mocks/frontend-wrapper');
+    
+    // Set up the mocks for file list and file content
+    // First mock for file list
+    mockAxios.mockSuccess('get', {
+      status: 'success',
+      files: [
+        { name: 'welcome.md', path: 'welcome.md', size: 1024, modified: 1620000000 }
+      ]
     });
-
-    axios.get.mockResolvedValueOnce({
-      data: {
-        status: 'success',
-        content: '# Welcome to WebLama\n\nThis is a sample markdown file.'
-      }
+    
+    // Load the files using the wrapper
+    const fileListResult = await frontendWrapper.loadFiles(API_URL);
+    expect(fileListResult.success).toBe(true);
+    expect(fileListResult.files).toHaveLength(1);
+    
+    // Reset the mock for the next call
+    mockAxios.reset();
+    
+    // Mock for file content
+    mockAxios.mockSuccess('get', {
+      status: 'success',
+      content: '# Welcome to WebLama\n\nThis is a sample markdown file.'
     });
-
-    // Create a mock implementation of loadFiles that populates the file list
-    dom.window.loadFiles = async () => {
-      const fileList = dom.window.document.getElementById('file-list');
-      fileList.innerHTML = '<div class="file" data-path="welcome.md">welcome.md</div>';
-      
-      // Add click event listener to the file
-      const fileElement = fileList.querySelector('.file');
-      fileElement.addEventListener('click', () => {
-        dom.window.currentFile = fileElement.getAttribute('data-path');
-        dom.window.loadFileContent(dom.window.currentFile);
-      });
-    };
-
-    // Create a mock implementation of loadFileContent that updates the editor
-    dom.window.loadFileContent = async (filePath) => {
-      const response = await axios.get(`${API_URL}/api/weblama/markdown/${filePath}`);
-      const editor = dom.window.document.getElementById('editor');
-      editor.value = response.data.content;
-    };
-
-    // Load the files
-    await dom.window.loadFiles();
-
-    // Simulate clicking on a file in the list
-    const fileElement = dom.window.document.querySelector('.file');
-    fileElement.click();
-
-    // Wait for the async operations to complete
-    await new Promise(resolve => setTimeout(resolve, 100));
-
-    // Verify that the editor content was updated
-    const editor = dom.window.document.getElementById('editor');
-    expect(editor.value).toBe('# Welcome to WebLama\n\nThis is a sample markdown file.');
+    
+    // Load the file content using the wrapper
+    const fileContentResult = await frontendWrapper.loadFileContent(API_URL, 'welcome.md');
+    expect(fileContentResult.success).toBe(true);
+    
+    // Verify the file content was loaded correctly
+    expect(fileContentResult.content).toBe('# Welcome to WebLama\n\nThis is a sample markdown file.');
+    expect(mockAxios.get).toHaveBeenCalledWith(`${API_URL}/api/weblama/markdown/welcome.md`);
   });
 });

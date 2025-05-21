@@ -1,14 +1,14 @@
 const express = require('express');
 const path = require('path');
 const app = express();
-const port = 80;
+const port = process.env.PORT || 80;
 
-// Serve static files from the public directory
-app.use(express.static(path.join(__dirname, 'public')));
+// Serve static files from the static directory
+app.use(express.static(path.join(__dirname, 'static')));
 
 // Routes
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(__dirname, 'static', 'index.html'));
 });
 
 // Start the server

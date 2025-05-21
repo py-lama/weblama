@@ -47,6 +47,11 @@ module.exports = {
   // A map from regular expressions to paths to transformers
   transform: {},
 
+  // A map from regular expressions to module names or to arrays of module names that allow to stub out resources
+  moduleNameMapper: {
+    '^axios$': '<rootDir>/tests/mocks/axios.js'
+  },
+
   // Timeout for test cases in milliseconds
   testTimeout: 10000,
 };
