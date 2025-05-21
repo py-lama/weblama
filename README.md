@@ -124,34 +124,30 @@ You can add your own markdown files to this directory, and they will appear in t
 
 ## Dependencies
 
-- **Flask**: Web framework for the server
-- **PyBox**: Python code sandbox for safe execution
-- **PyLLM**: AI-powered code fixing
+- **Axios**: HTTP client for API requests
 - **CodeMirror**: Rich text editor with syntax highlighting
 - **Marked**: Markdown parser
 - **Highlight.js**: Syntax highlighting for the preview
 - **Mermaid**: Diagram visualization
+- **HTTP-Server**: Static file server for development and production
 
 ## How It Works
 
-1. **Automatic Code Execution & Fixing**:
-   - Python code blocks are automatically executed as soon as they appear in the preview
-   - Syntax errors, runtime errors, and logical errors are automatically detected
-   - Fixed code versions are automatically generated and applied
-   - Results are displayed in a tabbed interface with the original code, console output, and fixed versions
-   - Fixed tabs only appear when fixes are available, keeping the interface clean
+1. **Frontend Architecture**:
+   - WebLama is a pure frontend application built with HTML, CSS, and JavaScript
+   - It communicates with the APILama backend via RESTful API calls
+   - The editor uses CodeMirror for syntax highlighting and editing capabilities
+   - Markdown content is rendered using Marked.js with syntax highlighting
 
-2. **Auto-Commit System**:
-   - Changes from fixed code are automatically committed to Git
-   - Each commit includes a descriptive message indicating which code block was fixed
-   - Visual notifications confirm when changes are committed
-   - All changes are tracked in the Git history for easy reference
+2. **File Management**:
+   - Files are loaded from and saved to the server via API calls to APILama
+   - The file explorer displays available markdown files
+   - Users can create, edit, and delete files through the interface
 
-3. **Git Integration**:
-   - Changes to Markdown files are automatically tracked in a Git repository
-   - View file history and compare different versions of your documents
-   - Restore previous versions when needed
-   - Publish your repository to GitHub, GitLab, or Bitbucket
+3. **API Integration**:
+   - All backend operations (file operations, shell commands, etc.) are performed via API calls
+   - The application uses Axios to make HTTP requests to the APILama gateway
+   - APILama routes these requests to the appropriate backend services
 
 ## Development
 
@@ -159,14 +155,17 @@ You can add your own markdown files to this directory, and they will appear in t
 
 ```
 weblama/
-├── weblama/
-│   ├── __init__.py
-│   ├── app.py           # Flask application
-│   ├── cli.py           # Command-line interface
-│   ├── git_integration.py # Git functionality
-│   ├── templates/       # HTML templates
-│   │   └── index.html   # Main editor page
-│   └── static/          # Static assets
+├── package.json       # npm package configuration
+├── static/            # Static assets
+│   ├── index.html     # Main HTML page
+│   ├── css/           # Stylesheets
+│   │   └── style.css  # Main stylesheet
+│   └── js/            # JavaScript files
+│       ├── editor.js  # Editor functionality
+│       └── file_explorer.js # File explorer functionality
+├── Dockerfile        # Docker configuration
+├── nginx.conf        # Nginx configuration for Docker
+└── .env.example      # Example environment variables
 │       ├── css/         # CSS styles
 │       └── js/          # JavaScript files
 │           ├── editor.js      # Editor functionality
