@@ -1,6 +1,6 @@
 # Makefile for WebLama
 
-.PHONY: help web cli test setup
+.PHONY: help web cli test setup venv
 
 default: help
 
@@ -12,17 +12,28 @@ help:
 	@echo "  cli        Show CLI usage help"
 	@echo "  test       Run tests"
 
-setup:
+# Default values
+PORT ?= 8081
+HOST ?= 127.0.0.1
+
+# Create virtual environment if it doesn't exist
+venv:
+	@test -d venv || python3 -m venv venv
+
+# Install dependencies in the virtual environment
+setup: venv
 	@echo "Installing dependencies..."
-	pip install -r requirements.txt
+	@. venv/bin/activate && pip install -r requirements.txt
 
+# Run the web server using the virtual environment
 web: setup
-	@echo "Starting WebLama web server..."
-	@export PORT=${PORT:-8081} && export HOST=${HOST:-127.0.0.1} && \
-	python3 -m weblama.app
+	@echo "Starting WebLama web server on port $(PORT)..."
+	@. venv/bin/activate && python -m weblama.app --port $(PORT) --host $(HOST)
 
+# Run the CLI using the virtual environment
 cli: setup
-	@weblama --help
+	@. venv/bin/activate && python -m weblama_cli --help
 
+# Run tests using the virtual environment
 test: setup
-	pytest tests/
+	@. venv/bin/activate && pytest tests/

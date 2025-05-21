@@ -12,7 +12,19 @@ import os
 import sys
 import logging
 from pathlib import Path
-from dotenv import load_dotenv
+
+# Handle different ways the dotenv package might be installed
+try:
+    from dotenv import load_dotenv
+except ImportError:
+    try:
+        from python_dotenv import load_dotenv
+    except ImportError:
+        # If dotenv is not available, define a dummy function
+        def load_dotenv(path=None):
+            logging.warning("python-dotenv package not found, environment variables from .env will not be loaded")
+            pass
+
 from flask import Flask, session
 
 # Load environment variables from .env file
@@ -78,18 +90,44 @@ def main():
     """Run the Flask application.
     
     This function is the entry point for the application when run directly.
+    Supports both environment variables and command-line arguments.
     """
+    import argparse
+    
+    # Parse command-line arguments
+    parser = argparse.ArgumentParser(description='Run the WebLama web application')
+    parser.add_argument('--port', type=int, help='Port to run the server on')
+    parser.add_argument('--host', type=str, help='Host to run the server on')
+    parser.add_argument('--debug', action='store_true', help='Run in debug mode')
+    
+    # Check for positional arguments (for compatibility with 'make run-weblama PORT=8080')
+    parser.add_argument('PORT', nargs='?', help='Port to run the server on (positional)')
+    parser.add_argument('HOST', nargs='?', help='Host to run the server on (positional)')
+    
+    args = parser.parse_args()
+    
     # Create the app
     app = create_app()
     
-    # Run the app
-    host = os.environ.get('HOST', '127.0.0.1')
+    # Determine host (priority: command-line args, then environment variables, then default)
+    host = args.host or args.HOST or os.environ.get('HOST', '127.0.0.1')
     
-    # Handle PORT environment variable, accounting for empty strings
-    port_env = os.environ.get('PORT', '5000')
-    port = int(port_env) if port_env.strip() else 5000
+    # Determine port (priority: command-line args, then environment variables, then default)
+    port_arg = args.port or args.PORT
+    port_env = os.environ.get('PORT', '')
     
-    debug = os.environ.get('DEBUG', 'false').lower() == 'true'
+    # Convert port to int, with fallbacks
+    if port_arg is not None:
+        port = int(port_arg)
+    elif port_env.strip():
+        port = int(port_env)
+    else:
+        port = 5000
+    
+    # Determine debug mode
+    debug_arg = args.debug
+    debug_env = os.environ.get('DEBUG', 'false').lower() == 'true'
+    debug = debug_arg or debug_env
     
     print(f"Starting WebLama on {host}:{port} (debug={debug})")
     app.run(host=host, port=port, debug=debug)
