@@ -37,7 +37,7 @@ A frontend web application for the PyLama ecosystem with syntax highlighting, Me
 
 ```bash
 # Clone the repository
-git clone https://github.com/py-lama/py-lama.git
+git clone https://github.com/py-lama/pylama.git
 cd py-lama/weblama
 
 # Install dependencies

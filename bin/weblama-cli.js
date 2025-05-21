@@ -21,7 +21,7 @@ const version = packageJson.version;
 
 // Default configuration
 const DEFAULT_PORT = 8081;
-const DEFAULT_API_URL = 'http://localhost:8080';
+const DEFAULT_API_URL = 'http://localhost:8085';
 
 // Configure the CLI
 program
@@ -38,7 +38,7 @@ program
   .option('-o, --open', 'Open the browser after starting the server', false)
   .action(async (options) => {
     const port = options.port;
-    const apiUrl = options.api_url;
+    const apiUrl = options.apiUrl;
     
     console.log(chalk.blue('Starting WebLama frontend server...'));
     console.log(chalk.gray(`Port: ${port}`));
