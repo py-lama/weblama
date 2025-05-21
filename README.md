@@ -31,7 +31,6 @@ pip install -e .
 ### Starting the Web Server
 
 ```bash
-# Start the WebLama server
 weblama
 
 # Specify host and port
