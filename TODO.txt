@@ -1,0 +1,9 @@
+bazując na strukturze projektu webllama i zaimlpementowanych w tym projekcie dodatkowych funkcjonalności, sparwdz, czy ktoreś z nich nie były by możłiwe do wdrożenia bezpośrednio  w projektach:
+../pylama
+../pybox
+../pyllm
+
+być może są jakieś kwestie związane w zfunkcjonalnośćią, ktora wychodzi poza projekt webllama
+może są elementy API, które mogłoby być zaimlpementowane w źródłowej zależności a nie w projekcie webllama
+może da sie zmniejszyć ilość klas i  funkcji python w projekcie do tylko prezentacji danych i funkcjonalności uzywanych poprzez API z  sandboxu, zarządzaniem ollamam i wykonywaniem kodów pythonowych skryptow ze zwracaniem logow oraz obsluga requestow API dla kazdej paczki, uruchamiajac każdą paczkę nie tylko jako klient shell ale restapi
+w ten posob weblama może używac docker compose w którym będą uruchamiane tamte paczki z dockerfile, ktory bedzie zaimplmentowany w biblitokekach
