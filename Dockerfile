@@ -9,11 +9,14 @@ COPY package*.json ./
 # Install dependencies
 RUN npm install
 
-# Copy the rest of the application
-COPY . .
+# Copy the static files
+COPY static/ ./static/
 
-# Build the static assets
-RUN npm run build
+# Create dist directory
+RUN mkdir -p dist
+
+# Copy static files to dist directory
+RUN cp -r static/* dist/
 
 # Stage 2: Serve the static assets with nginx
 FROM nginx:alpine

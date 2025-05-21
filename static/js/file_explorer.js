@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
  */
 async function loadMarkdownFiles() {
     try {
-        const response = await fetch('/api/files');
+        const response = await fetch('http://localhost:8080/api/files');
         const data = await response.json();
         
         if (data.status === 'success') {
@@ -156,10 +156,12 @@ async function openFile(filePath) {
             }
         }
         
-        const response = await fetch(`/api/files/content?path=${encodeURIComponent(filePath)}`);
+        // Extract filename from path
+        const filename = filePath.split('/').pop();
+        const response = await fetch(`http://localhost:8080/api/file?filename=${encodeURIComponent(filename)}`);
         const data = await response.json();
         
-        if (data.success === true) {
+        if (data.status === 'success') {
             // Update the editor with the file content
             editor.setValue(data.content);
             
@@ -167,7 +169,7 @@ async function openFile(filePath) {
             lastSavedContent = data.content;
             
             // Update the filename input
-            document.getElementById('filename').value = data.name;
+            document.getElementById('filename').value = filename;
             
             // Update the current file
             currentFile = filePath;
@@ -267,17 +269,30 @@ async function saveAndCommitChanges(commitMessage) {
     const filename = document.getElementById('filename').value;
     
     try {
-        // Save the file and commit to Git in one operation
-        const saveResponse = await fetch(`/api/files/${encodeURIComponent(filename)}`, {
-            method: 'PUT',
+        // Save the file to the APILama backend
+        const saveResponse = await fetch(`http://localhost:8080/api/file`, {
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                content: content,
-                commit_message: commitMessage || 'Update file'
+                filename: filename,
+                content: content
             })
         });
+        
+        // If save was successful, commit to Git
+        if (saveResponse.ok) {
+            const commitResponse = await fetch(`http://localhost:8080/api/git/commit`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: commitMessage || 'Update file'
+                })
+            });
+        }
         
         const saveData = await saveResponse.json();
         
