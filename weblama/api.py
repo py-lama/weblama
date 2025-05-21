@@ -139,6 +139,7 @@ def execute_code():
         
         # Execute each code block
         results = []
+        updated_markdown = data['content']
         for i, (code, _, _) in enumerate(code_blocks):
             logger.info(f'Executing code block {i+1}/{len(code_blocks)}')
             
@@ -149,30 +150,37 @@ def execute_code():
             block_result = {
                 'block_index': i,
                 'success': result['success'],
-                'output': result.get('output', ''),
-                'error': result.get('error', '')
+                'output': result.get('output') or result.get('stdout', ''),
+                'error': result.get('error') or result.get('stderr') or result.get('error_message', ''),
+                'fixed_code': None,
+                'fixed_output': None
             }
             
             # Log the execution result
             log_code_execution(i, result['success'], 
-                             output=result.get('output', ''), 
-                             error=result.get('error', ''))
+                             output=result.get('output', '') or result.get('stdout', ''), 
+                             error=result.get('error', '') or result.get('stderr', '') or result.get('error_message', ''))
             
             # If there's an error, try to fix it
             if not result['success']:
                 logger.info(f'Attempting to fix code block {i+1} with error: {result.get("error", "")}')
                 try:
-                    fixed_code = fix_code_with_pyllm(code, result['error'])
+                    fixed_code = fix_code_with_pyllm(code, result.get('error', ''))
+                    block_result['fixed_code'] = fixed_code  # Always set, even if None
                     if fixed_code:
-                        block_result['fixed_code'] = fixed_code
-                        logger.info(f'Successfully fixed code block {i+1}')
+                        try:
+                            fixed_result = execute_code_with_pybox(fixed_code)
+                            block_result['fixed_output'] = fixed_result.get('output') or fixed_result.get('stdout', '')
+                            logger.info(f'Successfully fixed code block {i+1}')
+                            updated_markdown = updated_markdown.replace(code, fixed_code)
+                        except Exception as exec_fix_error:
+                            block_result['fix_exec_error'] = str(exec_fix_error)
                 except Exception as fix_error:
                     block_result['fix_error'] = str(fix_error)
                     logger.error(f'Failed to fix code block {i+1}: {str(fix_error)}')
-            
             results.append(block_result)
         
-        return jsonify({'status': 'success', 'results': results})
+        return jsonify({'status': 'success', 'results': results, 'updated_markdown': updated_markdown})
     except Exception as e:
         logger.error(f'Error executing code: {str(e)}')
         return jsonify({'status': 'error', 'error': str(e)}), 500
