@@ -17,6 +17,7 @@ from weblama.logger import logger
 import weblama.cli.commands.file_commands
 import weblama.cli.commands.code_commands
 import weblama.cli.commands.git_commands
+import weblama.cli.commands.model_commands  # New module for model management
 
 
 def main():
@@ -35,6 +36,11 @@ def main():
     parser.add_argument('-v', '--verbose', action='store_true', help='Enable verbose output')
     parser.add_argument('--api-url', help='WebLama API URL')
     parser.add_argument('--no-color', action='store_true', help='Disable colored output')
+    
+    # Add environment variable arguments for microservices
+    parser.add_argument('--pybox-api-url', help='PyBox API URL')
+    parser.add_argument('--pyllm-api-url', help='PyLLM API URL')
+    parser.add_argument('--pylama-api-url', help='PyLama API URL')
     
     # Add subparsers for commands
     subparsers = parser.add_subparsers(dest='command', help='Command to execute')
@@ -65,6 +71,14 @@ def main():
     if not args.command:
         parser.print_help()
         return 0
+    
+    # Set environment variables for API URLs if specified
+    if args.pybox_api_url:
+        os.environ["PYBOX_API_URL"] = args.pybox_api_url
+    if args.pyllm_api_url:
+        os.environ["PYLLM_API_URL"] = args.pyllm_api_url
+    if args.pylama_api_url:
+        os.environ["PYLAMA_API_URL"] = args.pylama_api_url
     
     # Get the command
     command = commands[args.command]

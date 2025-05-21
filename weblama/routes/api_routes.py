@@ -40,7 +40,8 @@ def execute_code():
     # Execute and fix each code block
     results = []
     fixed_codes = []
-    
+    updated_blocks = []
+
     for i, (code_block, _, _) in enumerate(code_blocks):
         # Skip empty code blocks
         if not code_block.strip():
@@ -49,77 +50,74 @@ def execute_code():
                 'success': True,
                 'stdout': '',
                 'stderr': 'Empty code block',
-                'fixed_code': None
+                'output': '',
+                'error': 'Empty code block',
+                'fixed_code': None,
+                'fixed_output': None
             })
             fixed_codes.append(None)
+            updated_blocks.append(code_block)
             continue
-        
+
         # Execute the code
         result = execute_code_with_pybox(code_block)
-        
+
+        # Always extract error message for response
+        error_msg = result.get('error_message') or result.get('stderr') or result.get('error') or ''
+
         # If execution failed, try to fix the code
         fixed_code = None
+        fixed_output = None
         if not result['success']:
             # Fix the code
-            error_msg = result.get('error_message') or result.get('stderr') or result.get('error') or ''
             fixed_code = fix_code_with_pyllm(code_block, error_msg)
-            
             # Execute the fixed code
             if fixed_code:
                 fixed_result = execute_code_with_pybox(fixed_code)
-                
+                fixed_output = fixed_result.get('stdout', '') if fixed_result.get('success') else None
                 # If the fixed code still fails, try a different approach
                 if not fixed_result['success']:
                     # Try a different fix approach
-                    alternative_fix = generate_alternative_fix(fixed_code, fixed_result['error_message'], attempt=2)
-                    
+                    alternative_fix = generate_alternative_fix(fixed_code, fixed_result.get('error_message') or fixed_result.get('stderr') or fixed_result.get('error') or '', attempt=2)
                     if alternative_fix:
                         # Execute the alternative fix
                         alt_result = execute_code_with_pybox(alternative_fix)
-                        
-                        # If the alternative fix works, use it
                         if alt_result['success']:
                             fixed_code = alternative_fix
                             fixed_result = alt_result
-                        # If it still fails, try one more approach
+                            fixed_output = alt_result.get('stdout', '')
                         else:
-                            final_fix = generate_alternative_fix(alternative_fix, alt_result['error_message'], attempt=3)
-                            
+                            final_fix = generate_alternative_fix(alternative_fix, alt_result.get('error_message') or alt_result.get('stderr') or alt_result.get('error') or '', attempt=3)
                             if final_fix:
-                                # Execute the final fix
                                 final_result = execute_code_with_pybox(final_fix)
-                                
-                                # If the final fix works, use it
                                 if final_result['success']:
                                     fixed_code = final_fix
                                     fixed_result = final_result
-                
-                # If the fixed code works, update the result
-                if fixed_code and fixed_result['success']:
-                    result = fixed_result
-        
-        # Add the result to the list
-        results.append({
+                                    fixed_output = final_result.get('stdout', '')
+        # Build block result, always include 'error' and 'output' keys
+        block_result = {
             'block_id': i,
             'success': result['success'],
             'stdout': result.get('stdout', ''),
             'stderr': result.get('stderr', ''),
-            'error_type': result.get('error_type', None) if not result['success'] else None,
-            'error_message': result.get('error_message', None) if not result['success'] else None,
-            'fixed_code': fixed_code
-        })
-        
-        # Add the fixed code to the list
+            'output': result.get('stdout', ''),
+            'error': result.get('stderr') or result.get('error_message') or result.get('error') or '',
+            'fixed_code': fixed_code,
+            'fixed_output': fixed_output
+        }
+        results.append(block_result)
         fixed_codes.append(fixed_code)
-    
+        updated_blocks.append(fixed_code if fixed_code else code_block)
+
     # Update the markdown content with fixed code
-    updated_content = update_markdown_with_fixed_code(markdown_content, code_blocks, fixed_codes)
-    
-    # Return the results
-    return jsonify({
+    updated_markdown = update_markdown_with_fixed_code(markdown_content, code_blocks, fixed_codes)
+
+    # Build the response
+    response = {
         'results': results,
-        'updated_content': updated_content
-    })
+        'updated_markdown': updated_markdown
+    }
+    return jsonify(response)
 
 
 @api_routes.route('/api/fix', methods=['POST'])
