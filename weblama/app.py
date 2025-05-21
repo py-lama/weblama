@@ -84,9 +84,14 @@ def main():
     
     # Run the app
     host = os.environ.get('HOST', '127.0.0.1')
-    port = int(os.environ.get('PORT', 5000))
+    
+    # Handle PORT environment variable, accounting for empty strings
+    port_env = os.environ.get('PORT', '5000')
+    port = int(port_env) if port_env.strip() else 5000
+    
     debug = os.environ.get('DEBUG', 'false').lower() == 'true'
     
+    print(f"Starting WebLama on {host}:{port} (debug={debug})")
     app.run(host=host, port=port, debug=debug)
 
 
