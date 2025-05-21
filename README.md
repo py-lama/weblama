@@ -9,8 +9,9 @@ A web-based Markdown editor with syntax highlighting, Mermaid diagram support, a
 - **Rich Markdown Editor**: Syntax highlighting for various languages including Python, JavaScript, SQL, and Java
 - **Live Preview**: Real-time rendering of Markdown content with syntax highlighting
 - **Mermaid Diagram Support**: Create and visualize diagrams using Mermaid syntax
-- **Python Code Execution**: Execute Python code blocks directly from the editor
+- **Automatic Python Code Execution**: Python code blocks are automatically executed when rendered
 - **Automatic Code Fixing**: Detect and fix syntax errors, missing imports, and logical errors in Python code blocks
+- **Auto-Commit Fixed Code**: Changes from fixed code are automatically committed to Git with descriptive messages
 - **Git Version Control**: Track changes to your Markdown files and Mermaid diagrams
 - **Publishing Options**: Publish your repository to GitHub, GitLab, or Bitbucket
 
@@ -44,11 +45,44 @@ Then open your browser and navigate to http://localhost:5000 (or the specified h
 
 ### Using the Editor
 
-1. Write Markdown content in the editor panel
-2. See the rendered preview in real-time
-3. Click "Execute Python Code Blocks" to run and fix Python code
-4. Review execution results and apply fixes
-5. Save your document using the "Save" button
+1. **Creating and Editing Documents**
+   - Write Markdown content in the editor panel on the left
+   - See the rendered preview in real-time on the right
+   - Use the toolbar buttons for common formatting options
+   - Enter a filename in the top bar and click "Save" to save your document
+
+2. **Working with Python Code Blocks**
+   - Create Python code blocks using triple backticks and the python language identifier:
+     ````
+     ```python
+     print("Hello, World!")
+     ```
+     ````
+   - All Python code blocks are automatically executed when rendered
+   - Results appear in the "Console" tab below each code block
+   - If there are errors, fixed versions are automatically generated and applied
+   - You can manually run code again by clicking the "Run" button
+
+3. **Using the Git Integration**
+   - All changes are automatically tracked in Git
+   - Fixed code is automatically committed with descriptive messages
+   - Click the "History" button to view the commit history for the current file
+   - Use the "Publish" button to push your repository to GitHub, GitLab, or Bitbucket
+   - You can compare different versions of your document from the history view
+
+4. **Creating Mermaid Diagrams**
+   - Use Mermaid syntax within code blocks to create diagrams:
+     ````
+     ```mermaid
+     graph TD;
+         A-->B;
+         A-->C;
+         B-->D;
+         C-->D;
+     ```
+     ````
+   - Diagrams are automatically rendered in the preview pane
+   - Changes to diagrams are tracked in Git like any other content
 
 ## Dependencies
 
@@ -62,12 +96,20 @@ Then open your browser and navigate to http://localhost:5000 (or the specified h
 
 ## How It Works
 
-1. **Code Execution & Fixing**:
-   - Python code blocks are executed directly in the preview pane
-   - Syntax errors, runtime errors, and logical errors are automatically detected and fixed
+1. **Automatic Code Execution & Fixing**:
+   - Python code blocks are automatically executed as soon as they appear in the preview
+   - Syntax errors, runtime errors, and logical errors are automatically detected
+   - Fixed code versions are automatically generated and applied
    - Results are displayed in a tabbed interface with the original code, console output, and fixed versions
+   - Fixed tabs only appear when fixes are available, keeping the interface clean
 
-2. **Git Integration**:
+2. **Auto-Commit System**:
+   - Changes from fixed code are automatically committed to Git
+   - Each commit includes a descriptive message indicating which code block was fixed
+   - Visual notifications confirm when changes are committed
+   - All changes are tracked in the Git history for easy reference
+
+3. **Git Integration**:
    - Changes to Markdown files are automatically tracked in a Git repository
    - View file history and compare different versions of your documents
    - Restore previous versions when needed

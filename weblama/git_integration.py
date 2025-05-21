@@ -87,32 +87,39 @@ class GitIntegration:
         self._run_git_command(['git', 'add', 'README.md'])
         self._run_git_command(['git', 'commit', '-m', 'Initial commit'])
     
-    def save_file(self, content, filename):
+    def save_file(self, content, filename, commit_message=None):
         """Save a file to the repository and commit it.
         
         Args:
             content (str): Content of the file.
             filename (str): Name of the file.
+            commit_message (str, optional): Custom commit message. Defaults to None.
             
         Returns:
             bool: Whether the operation was successful.
         """
         try:
+            # Ensure the directory exists
+            os.makedirs(os.path.dirname(os.path.join(self.repo_path, filename)), exist_ok=True)
+            
             # Ensure the file has a .md extension
             if not filename.endswith('.md'):
                 filename += '.md'
             
-            # Save the file
-            file_path = os.path.join(self.repo_path, filename)
-            with open(file_path, 'w') as f:
+            # Write the content to the file
+            with open(os.path.join(self.repo_path, filename), 'w') as f:
                 f.write(content)
             
             # Add the file to Git
             self._run_git_command(['git', 'add', filename])
             
-            # Commit the file
-            timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            self._run_git_command(['git', 'commit', '-m', f'Update {filename} - {timestamp}'])
+            # Use custom commit message if provided, otherwise use default
+            if not commit_message:
+                timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                commit_message = f'Update {filename} - {timestamp}'
+            
+            # Commit the changes
+            self._run_git_command(['git', 'commit', '-m', commit_message])
             
             return True
         except Exception as e:
