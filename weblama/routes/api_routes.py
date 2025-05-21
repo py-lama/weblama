@@ -61,7 +61,8 @@ def execute_code():
         fixed_code = None
         if not result['success']:
             # Fix the code
-            fixed_code = fix_code_with_pyllm(code_block, result['error_message'])
+            error_msg = result.get('error_message') or result.get('stderr') or result.get('error') or ''
+            fixed_code = fix_code_with_pyllm(code_block, error_msg)
             
             # Execute the fixed code
             if fixed_code:
