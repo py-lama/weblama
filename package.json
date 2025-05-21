@@ -3,12 +3,16 @@
   "version": "1.0.0",
   "description": "Web frontend for the PyLama ecosystem",
   "main": "static/index.js",
+  "bin": {
+    "weblama": "./bin/weblama-cli.js"
+  },
   "scripts": {
     "start": "http-server ./static -p ${PORT:-8081} --cors",
     "build": "mkdir -p dist && cp -r static/* dist/",
     "dev": "http-server ./static -p ${PORT:-8081} --cors -c-1",
     "lint": "eslint static/js/**/*.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "chmod +x ./bin/weblama-cli.js"
   },
   "keywords": [
     "weblama",
@@ -21,11 +25,14 @@
   "license": "MIT",
   "dependencies": {
     "axios": "^0.27.2",
+    "chalk": "^4.1.2",
     "codemirror": "^5.65.5",
+    "commander": "^9.4.1",
     "highlight.js": "^11.7.0",
     "http-server": "^14.1.1",
     "marked": "^4.0.18",
-    "mermaid": "^9.1.7"
+    "mermaid": "^9.1.7",
+    "open": "^8.4.0"
   },
   "devDependencies": {
     "eslint": "^8.38.0"

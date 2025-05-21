@@ -64,7 +64,9 @@ document.addEventListener('DOMContentLoaded', () => {
  */
 async function loadMarkdownFiles() {
     try {
-        const response = await fetch('http://localhost:8080/api/files');
+        // Get API URL from environment or use default
+        const apiUrl = getApiUrl();
+        const response = await fetch(`${apiUrl}/api/weblama/markdown`);
         const data = await response.json();
         
         if (data.status === 'success') {
@@ -80,7 +82,20 @@ async function loadMarkdownFiles() {
         }
     } catch (error) {
         showError('Error loading files: ' + error.message);
+        console.error('Error loading files:', error);
     }
+}
+
+/**
+ * Get the API URL from environment variables or use default
+ */
+function getApiUrl() {
+    // Check if API_URL is defined in window object (can be set by the server)
+    if (window.API_URL) {
+        return window.API_URL;
+    }
+    // Default to localhost if not specified
+    return 'http://localhost:8080';
 }
 
 /**
@@ -158,7 +173,8 @@ async function openFile(filePath) {
         
         // Extract filename from path
         const filename = filePath.split('/').pop();
-        const response = await fetch(`http://localhost:8080/api/file?filename=${encodeURIComponent(filename)}`);
+        const apiUrl = getApiUrl();
+        const response = await fetch(`${apiUrl}/api/weblama/markdown/${encodeURIComponent(filename)}`);
         const data = await response.json();
         
         if (data.status === 'success') {
@@ -216,15 +232,15 @@ async function createNewFile() {
     const finalFileName = fileName.endsWith('.md') ? fileName : `${fileName}.md`;
     
     try {
-        const response = await fetch('/api/files', {
+        const apiUrl = getApiUrl();
+        const response = await fetch(`${apiUrl}/api/weblama/markdown/${encodeURIComponent(finalFileName)}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                path: finalFileName,
-                content: '# New Document\n\nStart writing here...',
-                commit_message: 'Create new file'
+                filename: finalFileName,
+                content: '# New Document\n\nStart writing here...'
             })
         });
         
@@ -270,7 +286,8 @@ async function saveAndCommitChanges(commitMessage) {
     
     try {
         // Save the file to the APILama backend
-        const saveResponse = await fetch(`http://localhost:8080/api/file`, {
+        const apiUrl = getApiUrl();
+        const saveResponse = await fetch(`${apiUrl}/api/weblama/markdown/${encodeURIComponent(filename)}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -283,13 +300,15 @@ async function saveAndCommitChanges(commitMessage) {
         
         // If save was successful, commit to Git
         if (saveResponse.ok) {
-            const commitResponse = await fetch(`http://localhost:8080/api/git/commit`, {
+            const apiUrl = getApiUrl();
+            const commitResponse = await fetch(`${apiUrl}/api/shellama/git/commit`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    message: commitMessage || 'Update file'
+                    message: commitMessage || 'Update file',
+                    path: '.'  // Current directory
                 })
             });
         }

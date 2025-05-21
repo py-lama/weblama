@@ -1,39 +1,51 @@
-# Makefile for WebLama
+# Makefile for WebLama Frontend
 
-.PHONY: help web cli test setup venv
+.PHONY: help setup web dev build lint test
 
 default: help
 
 help:
-	@echo "WebLama Makefile targets:"
-	@echo "  setup      Install dependencies"
+	@echo "WebLama Frontend Makefile targets:"
+	@echo "  setup      Install npm dependencies"
 	@echo "  web        Start the WebLama web UI on port 8081 (default)"
 	@echo "  web PORT=xxxx   Start the web UI on custom port"
-	@echo "  cli        Show CLI usage help"
+	@echo "  dev        Start the development server with hot reloading"
+	@echo "  build      Build the static assets for production"
+	@echo "  lint       Run linting on JavaScript files"
 	@echo "  test       Run tests"
 
 # Default values
 PORT ?= 8081
 HOST ?= 127.0.0.1
 
-# Create virtual environment if it doesn't exist
-venv:
-	@test -d venv || python3 -m venv venv
+# Install npm dependencies
+setup:
+	@echo "Installing npm dependencies..."
+	@npm install
 
-# Install dependencies in the virtual environment
-setup: venv
-	@echo "Installing dependencies..."
-	@. venv/bin/activate && pip install -r requirements.txt
-
-# Run the web server using the virtual environment
+# Run the web server using http-server
 web: setup
 	@echo "Starting WebLama web server on port $(PORT)..."
-	@. venv/bin/activate && python -m weblama.app --port $(PORT) --host $(HOST)
+	@PORT=$(PORT) npm start
 
-# Run the CLI using the virtual environment
-cli: setup
-	@. venv/bin/activate && python -m weblama_cli --help
+# Run the development server with hot reloading
+dev: setup
+	@echo "Starting WebLama development server on port $(PORT)..."
+	@PORT=$(PORT) npm run dev
 
-# Run tests using the virtual environment
+# Build the static assets for production
+build: setup
+	@echo "Building WebLama static assets..."
+	@npm run build
+
+# Run linting on JavaScript files
+lint: setup
+	@echo "Running linting on JavaScript files..."
+	@npm run lint
+
+# Run tests
 test: setup
-	@. venv/bin/activate && pytest tests/
+	@echo "Running tests..."
+	@npm test
+
+# This is now a frontend-only component, no CLI or Python tests
