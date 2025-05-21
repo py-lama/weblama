@@ -24,32 +24,13 @@ print("Hello, World!")
 ### Example 2: File Operations with Syntax Error
 
 ```python
-"""
-File I/O example
-"""
-def write_to_file(filename, content):
-    """Write content to a file."""
+# File operations with a syntax error
+def write_to_file(filename, content)
     with open(filename, 'w') as file:
         file.write(content)
     print(f"Content written to {filename}")
-def read_from_file(filename):
-    """Read content from a file."""
-    try:
-        with open(filename, 'r') as file:
-            content = file.read()
-        print(f"Content read from {filename}")
-        return content
-    except FileNotFoundError:
-        print(f"File {filename} not found")
-        return None
-if __name__ == '__main__':
-    # Write to a file
-    write_to_file('example.txt', 'Hello, World!\nThis is a sample file.')
-    # Read from the file
-    content = read_from_file('example.txt')
-    if content:
-        print("File content:")
-        print(content)
+
+write_to_file("example.txt", "Hello, this is a test!")
 ```
 
 ### Example 3: Function with Logic Error
@@ -77,14 +58,20 @@ print(f"The largest number is: {result}")
 ### Example 4: API Request with Missing Import
 
 ```python
+# API request example with missing import
 
 def get_data_from_api(url):
-    """Get data from an API."""
-    try:
-        response = requests.get(url)
-        response.raise_for_status()  # Raise an exception for HTTP errors
+    response = requests.get(url)
+    if response.status_code == 200:
         return response.json()
-    except requests.exceptions.RequestException as e:
-        print(f"Error making API request: {e}")
+    else:
         return None
+
+api_url = "https://jsonplaceholder.typicode.com/posts/1"
+data = get_data_from_api(api_url)
+if data:
+    print(f"Title: {data['title']}")
+    print(f"Body: {data['body']}")
+else:
+    print("Failed to fetch data")
 ```
