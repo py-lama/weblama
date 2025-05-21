@@ -16,50 +16,63 @@ A frontend web application for the PyLama ecosystem with syntax highlighting, Me
 
 ## Installation
 
+### Using npm
+
 ```bash
 # Clone the repository
 git clone https://github.com/py-lama/py-lama.git
 cd py-lama/weblama
 
-# Install the package
-pip install -e .
+# Install dependencies
+npm install
+```
+
+### Using Docker
+
+```bash
+# Build the Docker image
+docker build -t weblama .
+
+# Run the container
+docker run -p 8081:80 weblama
 ```
 
 ## Usage
 
-**WebLama is a command-line tool, not a web server.**
+**WebLama is a frontend web application that communicates with the APILama backend.**
 
-To use WebLama, run one of the following commands:
+To start the WebLama frontend server:
 
 ```bash
-weblama list           # List available files
-weblama get <file>     # Get the content of a file
-weblama models         # List available models
-weblama query --help   # Query a model (see options)
+# Start using npm
+npm start
 ```
 
-Global options:
-- `-v`, `--verbose`         Enable verbose output
-- `--api-url <URL>`         Set the WebLama API URL
-- `--no-color`              Disable colored output
-- `--pybox-api-url <URL>`   Set PyBox API URL
-- `--pyllm-api-url <URL>`   Set PyLLM API URL
-- `--pylama-api-url <URL>`  Set PyLama API URL
-
-**Do not use `--host` or `--port` with the `weblama` CLI.**
-These options are not valid for CLI usage and will result in an error like:
+This will start a web server on port 8081 by default. You can access the WebLama interface by opening your browser and navigating to:
 
 ```
-weblama: error: argument command: invalid choice: '0.0.0.0' (choose from ...)
+http://localhost:8081
 ```
 
-If you want to run a server, see the developer documentation for running the backend Flask app directly.
+You can customize the port by setting the PORT environment variable:
+
+```bash
+# Start on a custom port
+PORT=8090 npm start
+```
+
+### Environment Variables
+
+- `PORT`: The port to run the web server on (default: 8081)
+- `API_URL`: The URL of the APILama backend (default: http://localhost:8080)
+
+You can set these variables in a `.env` file or pass them directly when starting the server.
 
 ## Makefile Usage
 
 You can use the included `Makefile` for common tasks:
 
-- **Set up the project (creates a virtual environment and installs dependencies):**
+- **Set up the project (installs npm dependencies):**
   ```bash
   make setup
   ```
@@ -74,11 +87,17 @@ You can use the included `Makefile` for common tasks:
   ```bash
   make web PORT=8090
   ```
-  This starts the app on port 8090. The command-line arguments are used to pass the port to the application.
+  This starts the app on port 8090. The PORT environment variable is used to configure the server.
 
-- **Show CLI usage help:**
+- **Build the static assets:**
   ```bash
-  make cli
+  make build
+  ```
+  This creates a `dist` directory with all the static assets ready for deployment.
+
+- **Run linting:**
+  ```bash
+  make lint
   ```
 
 - **Run tests:**
@@ -86,7 +105,7 @@ You can use the included `Makefile` for common tasks:
   make test
   ```
 
-**Note:** The `weblama` CLI and the Web UI are separate. Use the Makefile to start the web server for browser access.
+**Note:** WebLama is now a frontend-only component that communicates with the APILama backend API gateway.
 
 ## Markdown Files
 
