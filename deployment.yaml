@@ -1,0 +1,60 @@
+services:
+  pybox:
+    name: PyBox
+    description: Python code execution sandbox
+    api_url: http://pybox:8000
+    endpoints:
+      - path: /execute
+        method: POST
+        description: Execute Python code
+      - path: /dependencies/install
+        method: POST
+        description: Install Python packages
+      - path: /analyze
+        method: POST
+        description: Analyze Python code for imports and dependencies
+      - path: /health
+        method: GET
+        description: Health check endpoint
+  
+  pyllm:
+    name: PyLLM
+    description: LLM operations service
+    api_url: http://pyllm:8001
+    endpoints:
+      - path: /query
+        method: POST
+        description: Query an LLM model
+      - path: /fix-code
+        method: POST
+        description: Fix Python code using LLM
+      - path: /health
+        method: GET
+        description: Health check endpoint
+  
+  pylama:
+    name: PyLama
+    description: Ollama management service
+    api_url: http://pylama:8002
+    endpoints:
+      - path: /models
+        method: GET
+        description: List available Ollama models
+      - path: /query
+        method: POST
+        description: Query an Ollama model
+      - path: /models/pull
+        method: POST
+        description: Pull an Ollama model
+      - path: /health
+        method: GET
+        description: Health check endpoint
+  
+  weblama:
+    name: WebLama
+    description: Web interface and API gateway
+    api_url: http://weblama:5000
+    depends_on:
+      - pybox
+      - pyllm
+      - pylama

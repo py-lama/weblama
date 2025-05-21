@@ -92,3 +92,10 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+# Export the Flask app instance for testing and CLI
+app = create_app()
+
+# Re-export code utilities for tests and API
+from weblama.core.code_execution import execute_code_with_pybox, fix_code_with_pyllm
+from weblama.core.markdown_utils import extract_python_code_blocks

@@ -6,13 +6,14 @@ Code execution module for WebLama
 This module provides functionality for executing and fixing Python code.
 """
 
-from weblama.core.sandbox import PythonSandbox
-from weblama.core.llm import OllamaRunner
+import os
+import requests
 from weblama.logger import logger, log_code_execution
+from weblama.api.client import APIClient
 
 
 def execute_code_with_pybox(code):
-    """Execute code using PyBox sandbox.
+    """Execute code using PyBox API.
     
     Args:
         code (str): The Python code to execute.
@@ -22,17 +23,17 @@ def execute_code_with_pybox(code):
     """
     log_code_execution('execute_code_with_pybox', code[:100] + '...' if len(code) > 100 else code)
     
-    # Create a PythonSandbox instance
-    sandbox = PythonSandbox()
+    # Create an API client instance
+    api_client = APIClient()
     
-    # Execute the code
-    result = sandbox.run_code(code)
+    # Execute the code using the PyBox API
+    result = api_client.execute_code(code, timeout=10)
     
     return result
 
 
 def fix_code_with_pyllm(code, error_message, is_logic_error=False):
-    """Fix code using PyLLM.
+    """Fix code using PyLLM API.
     
     Args:
         code (str): The Python code with issues.
@@ -45,54 +46,14 @@ def fix_code_with_pyllm(code, error_message, is_logic_error=False):
     log_code_execution('fix_code_with_pyllm', 
                      f"Code: {code[:50]}... Error: {error_message[:50]}... Logic Error: {is_logic_error}")
     
-    # Create an OllamaRunner instance
-    runner = OllamaRunner()
+    # Create an API client instance
+    api_client = APIClient()
     
-    # Prepare the prompt for fixing the code
-    if is_logic_error:
-        prompt = f"""Fix the following Python code that has a logical error:
-
-```python
-{code}
-```
-
-The code runs without errors but produces incorrect results. The issue is: {error_message}
-
-Specifically, look for comments that indicate where the logical error is and fix that part.
-
-Please provide only the fixed code as a Python code block. Make sure to include all necessary imports.
-
-Your fixed code should be complete and runnable."""
-    else:
-        prompt = f"""Fix the following Python code that has an error:
-
-```python
-{code}
-```
-
-Error message: {error_message}
-
-Please provide only the fixed code as a Python code block. Make sure to include all necessary imports.
-
-If the error is about missing imports, make sure to add the appropriate import statements at the top of the code.
-
-Your fixed code should be complete and runnable."""
-    
-    # Generate the fixed code
-    response = runner.query_ollama(prompt)
+    # Call the PyLLM API to fix the code
+    result = api_client.fix_code(code, error_message, is_logic_error=is_logic_error)
     
     # Extract the fixed code from the response
-    fixed_code = runner.extract_python_code(response)
-    
-    # If the fixed code is empty or too short, try to extract it differently
-    if not fixed_code or len(fixed_code) < 10:
-        # Try to extract any code-like content from the response
-        code_lines = []
-        for line in response.split('\n'):
-            if line.strip() and not line.startswith('#') and not line.startswith('```'):
-                code_lines.append(line)
-        if code_lines:
-            fixed_code = '\n'.join(code_lines)
+    fixed_code = result.get('fixed_code', '')
     
     logger.debug(f"Generated fixed code of length {len(fixed_code)}")
     return fixed_code
@@ -115,64 +76,18 @@ def generate_alternative_fix(code, error, attempt=1):
     log_code_execution('generate_alternative_fix', 
                      f"Attempt: {attempt}, Code: {code[:50]}... Error: {error[:50]}...")
     
-    # For the second attempt, focus on specific error types
-    if attempt == 2:
-        # Create a more detailed prompt based on the error type
-        if "ModuleNotFoundError" in error or "ImportError" in error:
-            prompt = f"""Fix the following Python code that has an import error:
-
-```python
-{code}
-```
-
-Error message: {error}
-
-Please focus on fixing the imports. Consider using standard library alternatives if a package is not available.
-Provide only the fixed code as a Python code block."""
-        elif "SyntaxError" in error:
-            prompt = f"""Fix the following Python code that has a syntax error:
-
-```python
-{code}
-```
-
-Error message: {error}
-
-Please carefully check for syntax issues like missing colons, parentheses, or indentation.
-Provide only the fixed code as a Python code block."""
-        else:
-            prompt = f"""Fix the following Python code that still has an error after a previous fix attempt:
-
-```python
-{code}
-```
-
-Error message: {error}
-
-Please try a completely different approach to fix this code.
-Provide only the fixed code as a Python code block."""
-    
-    # For the third attempt, try a more radical approach
-    elif attempt == 3:
-        prompt = f"""This Python code has been fixed twice but still has errors:
-
-```python
-{code}
-```
-
-Error message: {error}
-
-Please rewrite this code completely from scratch to achieve the same goal but with a simpler approach.
-Focus on using only the standard library and basic Python features.
-Provide only the fixed code as a Python code block."""
-    
-    else:
+    # Only proceed for attempts 2 or 3
+    if attempt not in [2, 3]:
         return None
     
-    # Generate the fixed code
-    runner = OllamaRunner()
-    response = runner.query_ollama(prompt)
-    fixed_code = runner.extract_python_code(response)
+    # Create an API client instance
+    api_client = APIClient()
+    
+    # Call the PyLLM API to fix the code with the specific attempt number
+    result = api_client.fix_code(code, error, is_logic_error=False, attempt=attempt)
+    
+    # Extract the fixed code from the response
+    fixed_code = result.get('fixed_code', '')
     
     logger.debug(f"Generated alternative fix (attempt {attempt}) of length {len(fixed_code)}")
     return fixed_code
