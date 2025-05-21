@@ -1,5 +1,20 @@
 # WebLama
 
+a sleek and feature-rich frontend web application designed to work seamlessly with the #PyLama based on #Ollama ecosystem for developers, educators, and technical writers, 
+
+🚀 WebLama is a Frontend for the #PyLama, brings together markdown editing, code highlighting, and Mermaid diagram support in one intuitive interface.
+
+- ✨ Rich Markdown Editor with syntax highlighting for Python, JavaScript, SQL, Java, and more  
+- 🔁 Live Preview – see your Markdown rendered in real time  
+- 📊 Mermaid Diagram Support – create flowcharts, sequence diagrams, and more using Mermaid syntax  
+- 💻 Responsive Design – works beautifully on desktop and mobile  
+- 🗂️ File Explorer – browse and manage your Markdown files with ease  
+- ⚙️ Integration with APILama – connects to backend services via the APILama gateway  
+
+
+#WebLama #PyLama #MarkdownEditor #MermaidJS #FrontendDev #OpenSource
+
+
 A frontend web application for the PyLama ecosystem with syntax highlighting, Mermaid diagram support, and markdown rendering capabilities.
 
 ![WebLama.png](weblama.png)
