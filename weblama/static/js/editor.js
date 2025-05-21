@@ -172,7 +172,7 @@ function convertPythonCodeBlocks() {
         consolePanel.className = 'code-block-content';
         consolePanel.dataset.tab = 'console';
         consolePanel.innerHTML = `
-            <div class="code-block-output">Click "Run" to execute this code block.</div>
+            <div class="code-block-output">Executing code...</div>
             <div class="code-block-history"></div>
         `;
         
@@ -191,6 +191,11 @@ function convertPythonCodeBlocks() {
         
         // Apply syntax highlighting to the code in the code panel
         hljs.highlightElement(codePanel.querySelector('code'));
+        
+        // Schedule automatic execution after a short delay to ensure the UI is ready
+        setTimeout(() => {
+            executeCodeBlock(blockId);
+        }, 100 * blockIndex); // Stagger execution to avoid overwhelming the server
         
         blockIndex++;
     });
@@ -306,6 +311,11 @@ async function executeCodeBlock(blockId) {
                 hljs.highlightElement(codeElement);
                 // Ensure proper formatting
                 codeElement.style.whiteSpace = 'pre';
+                
+                // Auto-apply the fixed code after a short delay
+                setTimeout(() => {
+                    applyFixedCode(blockId, 'fixed1');
+                }, 500);
             }
             
             // Add alternative fixed version if available
@@ -339,7 +349,11 @@ async function executeCodeBlock(blockId) {
                     <pre><code class="language-python">${escapeHtml(result.fixed_code_alt)}</code></pre>
                     <button class="execute-button" onclick="applyFixedCode('${blockId}', 'fixed2')">Apply Fix</button>
                 `;
-                hljs.highlightElement(panelElement.querySelector('code'));
+                // Apply syntax highlighting
+                const codeElement = panelElement.querySelector('code');
+                hljs.highlightElement(codeElement);
+                // Ensure proper formatting
+                codeElement.style.whiteSpace = 'pre';
             }
         }
         
@@ -375,24 +389,62 @@ function updateHistoryDisplay(blockId, historyElement) {
     historyElement.innerHTML = historyHtml;
 }
 
-// Apply fixed code
-function applyFixedCode(blockId, fixedVersion) {
+// Apply fixed code to the original code block and auto-commit
+function applyFixedCode(blockId, fixType) {
     const container = document.querySelector(`.code-block-container[data-block-id="${blockId}"]`);
-    const fixedPanel = container.querySelector(`.code-block-content[data-tab="${fixedVersion}"]`);
+    const fixedPanel = container.querySelector(`.code-block-content[data-tab="${fixType}"]`);
     const codePanel = container.querySelector('.code-block-content[data-tab="code"]');
     
     // Get the fixed code
     const fixedCode = fixedPanel.querySelector('code').textContent;
     
-    // Update the code panel with the fixed code
+    // Update the original code block
     codePanel.innerHTML = `<pre><code class="language-python">${escapeHtml(fixedCode)}</code></pre>`;
     hljs.highlightElement(codePanel.querySelector('code'));
     
     // Switch to the code tab
     switchTab(blockId, 'code');
     
-    // Update the editor content
-    updateEditorWithFixedCode(blockId, fixedCode);
+    // Update the editor content to reflect the changes
+    updateEditorFromPreview();
+    
+    // Auto-commit the changes to Git
+    saveAndCommitChanges(`Auto-fixed Python code block #${blockId}`);
+    
+    // Show a notification
+    showNotification('Fixed code applied and committed successfully!');
+}
+
+// Function to save and commit changes to Git
+function saveAndCommitChanges(commitMessage) {
+    // First save the current content
+    saveMarkdown();
+    
+    // Then commit the changes to Git
+    const currentFilename = document.getElementById('filename').value;
+    
+    fetch('/api/git/save', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            content: editor.getValue(),
+            filename: currentFilename,
+            message: commitMessage
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('Changes committed to Git:', data);
+        } else {
+            console.error('Failed to commit changes:', data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error committing changes:', error);
+    });
 }
 
 // Update the editor content with fixed code
@@ -577,11 +629,13 @@ document.getElementById('save-btn').addEventListener('click', async () => {
 // Helper function to escape HTML
 function escapeHtml(text) {
     if (!text) return '';
+    // Preserve newlines but escape HTML
     return text
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;')
-        .replace(/\n/g, '<br>');
+        .replace(/'/g, '&#039;');
+    // Note: We're no longer replacing newlines with <br> tags
+    // because we're using white-space: pre in CSS
 }
