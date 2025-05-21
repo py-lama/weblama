@@ -122,20 +122,26 @@ def create_file():
 @api.route('/api/execute', methods=['POST'])
 def execute_code():
     """Execute Python code blocks in markdown content"""
+    logger.info('API call: Execute code')
     try:
         data = request.json
         if not data or 'content' not in data:
+            logger.warning('Missing content for code execution')
             return jsonify({'status': 'error', 'error': 'Content is required'}), 400
         
         # Import the necessary functions from app.py
         from .app import extract_python_code_blocks, execute_code_with_pybox, fix_code_with_pyllm
+        from .logger import log_code_execution
         
         # Extract Python code blocks
         code_blocks = extract_python_code_blocks(data['content'])
+        logger.info(f'Found {len(code_blocks)} Python code blocks to execute')
         
         # Execute each code block
         results = []
         for i, (code, _, _) in enumerate(code_blocks):
+            logger.info(f'Executing code block {i+1}/{len(code_blocks)}')
+            
             # Execute the code
             result = execute_code_with_pybox(code)
             
@@ -147,43 +153,62 @@ def execute_code():
                 'error': result.get('error', '')
             }
             
+            # Log the execution result
+            log_code_execution(i, result['success'], 
+                             output=result.get('output', ''), 
+                             error=result.get('error', ''))
+            
             # If there's an error, try to fix it
             if not result['success']:
+                logger.info(f'Attempting to fix code block {i+1} with error: {result.get("error", "")}')
                 try:
                     fixed_code = fix_code_with_pyllm(code, result['error'])
                     if fixed_code:
                         block_result['fixed_code'] = fixed_code
+                        logger.info(f'Successfully fixed code block {i+1}')
                 except Exception as fix_error:
                     block_result['fix_error'] = str(fix_error)
+                    logger.error(f'Failed to fix code block {i+1}: {str(fix_error)}')
             
             results.append(block_result)
         
         return jsonify({'status': 'success', 'result': results})
     except Exception as e:
+        logger.error(f'Error executing code: {str(e)}')
         return jsonify({'status': 'error', 'error': str(e)}), 500
 
 @api.route('/api/git/history/<path:file_path>', methods=['GET'])
 def get_file_history(file_path):
     """Get the commit history for a specific file"""
+    logger.info(f'API call: Get Git history for {file_path}')
     try:
         history = git.get_file_history(file_path)
+        log_git_operation('history', file_path, True)
         return jsonify({'status': 'success', 'history': history})
     except Exception as e:
+        logger.error(f'Error getting Git history for {file_path}: {str(e)}')
+        log_git_operation('history', file_path, False, str(e))
         return jsonify({'status': 'error', 'error': str(e)}), 500
 
 @api.route('/api/git/publish', methods=['POST'])
 def publish_repository():
     """Publish the repository to a remote Git provider"""
+    logger.info('API call: Publish repository')
     try:
         data = request.json
         if not data or 'remote_url' not in data:
+            logger.warning('Missing remote URL for repository publishing')
             return jsonify({'status': 'error', 'error': 'Remote URL is required'}), 400
         
         remote_url = data['remote_url']
         remote_name = data.get('remote_name', 'origin')
         
+        logger.info(f'Publishing repository to {remote_url} as {remote_name}')
         git.publish_to_remote(remote_url, remote_name)
         
+        log_git_operation('publish', f'to {remote_url} as {remote_name}', True)
         return jsonify({'status': 'success', 'message': f'Repository published to {remote_url}'})
     except Exception as e:
+        logger.error(f'Error publishing repository: {str(e)}')
+        log_git_operation('publish', 'to remote', False, str(e))
         return jsonify({'status': 'error', 'error': str(e)}), 500
