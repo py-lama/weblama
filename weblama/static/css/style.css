@@ -1,0 +1,186 @@
+/* WebLama - Markdown Editor with Code Execution */
+
+/* General styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f5f5;
+    color: #333;
+}
+
+.header {
+    background-color: #2c3e50;
+    color: white;
+    padding: 1rem;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.toolbar {
+    margin-top: 0.5rem;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.toolbar input {
+    padding: 0.5rem;
+    border: none;
+    border-radius: 3px;
+    flex-grow: 1;
+}
+
+button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+button:hover {
+    background-color: #2980b9;
+}
+
+#execute-btn {
+    background-color: #27ae60;
+}
+
+#execute-btn:hover {
+    background-color: #219653;
+}
+
+/* Container layout */
+.container {
+    display: flex;
+    height: calc(100vh - 150px);
+    margin: 1rem;
+    gap: 1rem;
+}
+
+.editor-container, .preview-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: white;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.editor-container h2, .preview-container h2 {
+    margin: 0;
+    padding: 0.5rem 1rem;
+    background-color: #f0f0f0;
+    border-bottom: 1px solid #ddd;
+    font-size: 1rem;
+}
+
+/* CodeMirror editor */
+.CodeMirror {
+    height: 100%;
+    font-family: 'Fira Code', monospace;
+    font-size: 14px;
+}
+
+/* Preview styles */
+#preview {
+    padding: 1rem;
+    overflow: auto;
+    height: 100%;
+}
+
+#preview pre {
+    background-color: #f8f8f8;
+    border-radius: 3px;
+    padding: 0.5rem;
+    overflow: auto;
+}
+
+#preview code {
+    font-family: 'Fira Code', monospace;
+    font-size: 14px;
+}
+
+/* Execution results */
+.results-container {
+    margin: 1rem;
+    background-color: white;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.results-container h2 {
+    margin: 0;
+    padding: 0.5rem 1rem;
+    background-color: #f0f0f0;
+    border-bottom: 1px solid #ddd;
+    font-size: 1rem;
+}
+
+#results {
+    padding: 1rem;
+}
+
+.result-block {
+    margin-bottom: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.result-header {
+    background-color: #f8f8f8;
+    padding: 0.5rem;
+    border-bottom: 1px solid #ddd;
+    font-weight: bold;
+}
+
+.result-content {
+    padding: 0.5rem;
+    white-space: pre-wrap;
+    font-family: monospace;
+}
+
+.result-success .result-header {
+    background-color: #e6f7e6;
+    color: #27ae60;
+}
+
+.result-error .result-header {
+    background-color: #fbe9e7;
+    color: #e74c3c;
+}
+
+.result-fixed .result-header {
+    background-color: #e6f7ff;
+    color: #3498db;
+}
+
+.hidden {
+    display: none;
+}
+
+/* Mermaid diagrams */
+.mermaid {
+    text-align: center;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+        height: auto;
+    }
+    
+    .editor-container, .preview-container {
+        height: 50vh;
+    }
+}
