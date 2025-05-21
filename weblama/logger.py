@@ -143,9 +143,13 @@ def log_api_call(endpoint, method, data=None, response=None, error=None):
     else:
         logger.info(f"API call: {endpoint}", extra={'data': log_data})
 
-def log_file_operation(operation, filename, success, error=None):
-    """Log file operations"""
-    if success:
+def log_file_operation(operation, filename=None, success=True, error=None):
+    """Log file operations with default values for backward compatibility"""
+    # Handle case where only operation is provided (for backward compatibility)
+    if filename is None:
+        filename = 'all_files'
+        logger.info(f"File {operation} (using default parameters)")
+    elif success:
         logger.info(f"File {operation}: {filename}")
     else:
         logger.error(f"File {operation} failed: {filename} - {error}")

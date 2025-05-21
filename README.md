@@ -89,6 +89,21 @@ You can use the included `Makefile` for common tasks:
 
 **Note:** The `weblama` CLI and the Web UI are separate. Use the Makefile to start the web server for browser access.
 
+## Markdown Files
+
+WebLama looks for markdown files in the `markdown` directory located at:
+
+```
+/home/tom/github/py-lama/weblama/markdown/
+```
+
+If you don't see any files when you first start WebLama, you may need to create some markdown files in this directory. Two sample files are included:
+
+1. `welcome.md` - A basic introduction with a Python code example
+2. `mermaid_example.md` - Examples of Mermaid diagrams
+
+You can add your own markdown files to this directory, and they will appear in the WebLama interface.
+
 ## Dependencies
 
 - **Flask**: Web framework for the server

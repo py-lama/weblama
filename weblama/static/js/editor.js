@@ -1,13 +1,31 @@
 // WebLama - Markdown Editor with Code Execution
 
-// Import modules
-import { executeCode, executeMarkdown, saveToGit, getGitHistory, getFileContentAtCommit } from './modules/api.js';
-import { showNotification, escapeHtml } from './modules/ui-components.js';
-import { updatePreview, convertPythonCodeBlocks } from './modules/markdown.js';
-import { executeAllCodeBlocks, displayResults } from './modules/code-execution.js';
+// Global variables
+let currentFile = null;
+let lastSavedContent = '';
+
+// Global functions
+window.updatePreview = function() {
+    const content = window.editor.getValue();
+    const previewElement = document.getElementById('preview');
+    if (previewElement) {
+        // Convert markdown to HTML
+        previewElement.innerHTML = marked.parse(content);
+        
+        // Initialize mermaid diagrams
+        if (window.mermaid) {
+            window.mermaid.init(undefined, document.querySelectorAll('.language-mermaid'));
+        }
+        
+        // Apply syntax highlighting to code blocks
+        document.querySelectorAll('pre code').forEach((block) => {
+            hljs.highlightBlock(block);
+        });
+    }
+};
 
 // Initialize CodeMirror editor
-const editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
+window.editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
     mode: 'markdown',
     theme: 'monokai',
     lineNumbers: true,

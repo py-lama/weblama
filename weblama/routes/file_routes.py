@@ -24,7 +24,7 @@ def get_files():
     Returns:
         JSON response with a list of markdown files
     """
-    log_file_operation('get_files')
+    log_file_operation('list', 'all_markdown_files', True)
     
     # Get the markdown directory from the app config
     markdown_dir = current_app.config['MARKDOWN_DIR']
@@ -49,7 +49,11 @@ def get_files():
     # Sort files by modification time (newest first)
     markdown_files.sort(key=lambda x: x['modified'], reverse=True)
     
-    return jsonify(markdown_files)
+    # Return in the format expected by the frontend
+    return jsonify({
+        'status': 'success',
+        'files': markdown_files
+    })
 
 
 @file_routes.route('/api/file', methods=['GET'])

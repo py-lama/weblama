@@ -1,13 +1,12 @@
 /**
  * file_explorer.js - Handles the file system menu functionality
  * 
- * This module provides functions for:
+ * This file provides functions for:
  * - Loading markdown files from the server
  * - Displaying files in the sidebar
  * - Searching and filtering files
  * - Opening files for editing
  * - Creating new files
- * - Auto-committing changes to Git
  */
 
 // Store the current list of files
@@ -183,7 +182,9 @@ async function openFile(filePath) {
             });
             
             // Update the preview
-            updatePreview();
+            if (window.updatePreview) {
+                window.updatePreview();
+            }
             
             // Automatically execute all Python code blocks
             setTimeout(() => {
@@ -307,6 +308,33 @@ async function saveAndCommitChanges(commitMessage) {
 }
 
 /**
+ * Show a notification message
+ * 
+ * @param {string} message - The message to display
+ * @param {string} type - The type of notification (success, error, info)
+ */
+function showNotification(message, type = 'info') {
+    console.log(`${type.toUpperCase()}: ${message}`);
+    
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    
+    // Add to the document
+    const container = document.querySelector('.notification-container') || document.body;
+    container.appendChild(notification);
+    
+    // Remove after a delay
+    setTimeout(() => {
+        notification.classList.add('fade-out');
+        setTimeout(() => {
+            notification.remove();
+        }, 500);
+    }, 3000);
+}
+
+/**
  * Show an error message
  * 
  * @param {string} message - The error message to display
@@ -315,3 +343,9 @@ function showError(message) {
     console.error(message);
     showNotification(message, 'error');
 }
+
+// Make functions globally accessible
+window.loadMarkdownFiles = loadMarkdownFiles;
+window.openFile = openFile;
+window.showNotification = showNotification;
+window.showError = showError;

@@ -30,7 +30,8 @@ def write_to_file(filename, content)
         file.write(content)
     print(f"Content written to {filename}")
 
-write_to_file("example.txt", "Hello, this is a test!")
+
+write_to_file("../example.txt", "Hello, this is a test!")
 ```
 
 ### Example 3: Function with Logic Error
