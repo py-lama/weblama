@@ -199,6 +199,8 @@ You can add your own markdown files to this directory, and they will appear in t
 ```
 weblama/
 ├── package.json       # npm package configuration
+├── bin/               # Command-line tools
+│   └── weblama-cli.js # WebLama CLI tool
 ├── static/            # Static assets
 │   ├── index.html     # Main HTML page
 │   ├── css/           # Stylesheets
@@ -208,14 +210,9 @@ weblama/
 │       └── file_explorer.js # File explorer functionality
 ├── Dockerfile        # Docker configuration
 ├── nginx.conf        # Nginx configuration for Docker
-└── .env.example      # Example environment variables
-│       ├── css/         # CSS styles
-│       └── js/          # JavaScript files
-│           ├── editor.js      # Editor functionality
-│           └── git_integration.js # Git UI functionality
-├── tests/               # Test suite
-├── setup.py             # Package setup
-└── README.md            # This file
+├── .env.example      # Example environment variables
+├── Makefile          # Make commands for common tasks
+└── README.md         # This file
 ```
 
 ### Running Tests
