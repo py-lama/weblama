@@ -60,6 +60,11 @@ If you want to run a server, see the developer documentation for running the bac
 
 You can use the included `Makefile` for common tasks:
 
+- **Set up the project (creates a virtual environment and installs dependencies):**
+  ```bash
+  make setup
+  ```
+
 - **Start the Web UI on port 8081 (default):**
   ```bash
   make web
@@ -70,7 +75,7 @@ You can use the included `Makefile` for common tasks:
   ```bash
   make web PORT=8090
   ```
-  This starts the app on port 8090.
+  This starts the app on port 8090. The command-line arguments are used to pass the port to the application.
 
 - **Show CLI usage help:**
   ```bash
