@@ -22,15 +22,34 @@ logger = logging.getLogger(__name__)
 
 
 class GitIntegration:
-    """Git integration for WebLama."""
+    """Class for handling Git operations in the WebLama application.
+    
+    This class provides methods for managing Git repositories, including:
+    - Initializing a repository if it doesn't exist
+    - Saving and committing files
+    - Retrieving commit history
+    - Getting file content at specific commits
+    - Publishing repositories to remote Git providers
+    
+    All operations are performed using Git commands via subprocess, making
+    this class compatible with any system that has Git installed.
+    """
     
     def __init__(self, repo_path=None):
-        """Initialize the Git integration.
+        """Initialize the GitIntegration class.
+        
+        Sets up the Git repository path and initializes a repository if one
+        doesn't already exist at the specified location.
         
         Args:
-            repo_path (str, optional): Path to the Git repository. If None, a temporary repository will be created.
+            repo_path (str, optional): Path to the Git repository. If None,
+                                       the current working directory is used.
         """
-        self.repo_path = repo_path
+        if repo_path is None:
+            # Use the current working directory if no repo path is provided
+            self.repo_path = os.getcwd()
+        else:
+            self.repo_path = repo_path
         
         if not self.repo_path:
             # Create a temporary repository
@@ -88,15 +107,23 @@ class GitIntegration:
         self._run_git_command(['git', 'commit', '-m', 'Initial commit'])
     
     def save_file(self, content, filename, commit_message=None):
-        """Save a file to the repository and commit it.
+        """Save a file to the repository and commit it with an optional custom message.
+        
+        This method is central to the auto-commit functionality. It saves the provided
+        content to the specified file, adds it to Git staging, and commits it with
+        either a custom message or a default timestamp-based message.
+        
+        When used with auto-fixed code, the commit_message typically indicates which
+        code block was fixed (e.g., 'Auto-fixed Python code block #1').
         
         Args:
-            content (str): Content of the file.
-            filename (str): Name of the file.
-            commit_message (str, optional): Custom commit message. Defaults to None.
+            content (str): The content to save to the file.
+            filename (str): The name of the file to save.
+            commit_message (str, optional): Custom commit message. If None, a default
+                                          message with timestamp will be used.
             
         Returns:
-            bool: Whether the operation was successful.
+            bool: True if the save and commit were successful, False otherwise.
         """
         try:
             # Ensure the directory exists

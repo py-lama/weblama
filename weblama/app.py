@@ -5,8 +5,7 @@ WebLama - Web editor for Markdown with code execution and fixing
 
 This module provides a Flask web application that allows users to edit Markdown files
 with syntax highlighting for various code blocks, and automatically executes and fixes
-Python code blocks using PyBox and PyLLM.
-"""
+Python code blocks using PyBox and PyLLM."""
 
 import os
 import re
@@ -14,12 +13,17 @@ import sys
 import json
 import logging
 from pathlib import Path
+from dotenv import load_dotenv
 from flask import Flask, render_template, request, jsonify, send_from_directory, session
 from werkzeug.utils import secure_filename
 
-# Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
+# Load environment variables from .env file
+env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env')
+load_dotenv(env_path)
+
+# Import custom logger
+from weblama.logger import logger, init_app, log_api_call, log_file_operation, log_git_operation, log_code_execution
+# Use our custom logger instead of the default one
 
 # Add the parent directory to sys.path to import pylama modules
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
@@ -175,12 +179,16 @@ print("Hello, World!")
             return response.split("```python")[1].split("```")[0].strip()
         return ""
 
-# Import Git integration
+# Import Git integration and API
 from weblama.git_integration import GitIntegration
+from weblama.api import api as api_blueprint
 
 # Create Flask app
 app = Flask(__name__)
 app.secret_key = os.urandom(24)  # For session management
+
+# Register API blueprint
+app.register_blueprint(api_blueprint)
 
 # Create a Git repository in the user's home directory
 GIT_REPO_PATH = os.path.expanduser('~/weblama-git-repo')
@@ -333,10 +341,200 @@ def index():
     return render_template('index.html')
 
 
+@app.route('/api/files', methods=['GET'])
+def get_files():
+    """Get a list of all markdown files.
+    
+    Returns:
+        JSON response with a list of markdown files
+    """
+    try:
+        # Get the repository path from the GitIntegration class
+        git = GitIntegration()
+        repo_path = git.repo_path
+        
+        # Find all markdown files in the repository
+        markdown_files = []
+        for root, _, files in os.walk(repo_path):
+            for file in files:
+                if file.endswith('.md'):
+                    # Get the relative path from the repo root
+                    rel_path = os.path.relpath(os.path.join(root, file), repo_path)
+                    markdown_files.append({
+                        'name': file,
+                        'path': rel_path
+                    })
+        
+        return jsonify({
+            'success': True,
+            'files': markdown_files
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/files/content', methods=['GET'])
+def get_file_content():
+    """Get the content of a markdown file.
+    
+    Returns:
+        JSON response with the file content
+    """
+    file_path = request.args.get('path')
+    
+    if not file_path:
+        return jsonify({'error': 'No file path provided'}), 400
+    
+    try:
+        # Get the repository path from the GitIntegration class
+        git = GitIntegration()
+        repo_path = git.repo_path
+        
+        # Get the full path to the file
+        full_path = os.path.join(repo_path, file_path)
+        
+        # Check if the file exists
+        if not os.path.isfile(full_path):
+            return jsonify({'error': 'File not found'}), 404
+        
+        # Read the file content
+        with open(full_path, 'r') as f:
+            content = f.read()
+        
+        return jsonify({
+            'success': True,
+            'content': content,
+            'name': os.path.basename(file_path),
+            'path': file_path
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/files/create', methods=['POST'])
+def create_file():
+    """Create a new markdown file.
+    
+    Returns:
+        JSON response with the result
+    """
+    data = request.get_json()
+    file_name = data.get('name')
+    content = data.get('content', '')
+    
+    if not file_name:
+        return jsonify({'error': 'No file name provided'}), 400
+    
+    try:
+        # Get the repository path from the GitIntegration class
+        git = GitIntegration()
+        repo_path = git.repo_path
+        
+        # Ensure the file has a .md extension
+        if not file_name.endswith('.md'):
+            file_name += '.md'
+        
+        # Get the full path to the file
+        full_path = os.path.join(repo_path, file_name)
+        
+        # Check if the file already exists
+        if os.path.exists(full_path):
+            return jsonify({'error': 'File already exists'}), 400
+        
+        # Create the file
+        with open(full_path, 'w') as f:
+            f.write(content)
+        
+        # Commit the new file to Git
+        git.save_file(content, file_name, f'Created new file: {file_name}')
+        
+        return jsonify({
+            'success': True,
+            'path': file_name
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 @app.route('/static/<path:filename>')
 def serve_static(filename):
     """Serve static files."""
     return send_from_directory('static', filename)
+
+
+def generate_alternative_fix(code, error, attempt=1):
+    """Generate an alternative fix for code that still has errors.
+    
+    This function creates different fix approaches based on the attempt number
+    and the specific error message.
+    
+    Args:
+        code (str): The code from the previous fix attempt
+        error (str): The error message from the previous fix attempt
+        attempt (int): The current fix attempt number (2 or 3)
+        
+    Returns:
+        str: The new fixed code, or None if no fix could be generated
+    """
+    # Create a more specific prompt based on the attempt number and error
+    if attempt == 2:
+        prompt = f"Fix this Python code that still has errors after a first fix attempt. Error: {error}"
+    else:  # attempt == 3
+        prompt = f"Try a completely different approach to fix this Python code. Previous fixes failed with: {error}"
+    
+    try:
+        # Use the OllamaRunner to generate a new fix
+        runner = OllamaRunner()
+        response = runner.query_ollama(prompt + "\n\n```python\n" + code + "\n```")
+        fixed_code = runner.extract_python_code(response)
+        
+        if fixed_code and fixed_code != code:
+            return fixed_code
+        return None
+    except Exception as e:
+        logger.error(f"Error generating alternative fix: {e}")
+        return None
+
+
+@app.route('/api/fix', methods=['POST'])
+def generate_fix():
+    """Generate a new fix for code that still has errors.
+    
+    This endpoint supports the advanced auto-fix workflow that tries multiple
+    fix approaches until the code works correctly.
+    
+    Request JSON parameters:
+        code (str): The code from the previous fix attempt
+        error (str): The error message from the previous fix attempt
+        attempt (int): The current fix attempt number
+    
+    Returns:
+        JSON response with the new fixed code
+    """
+    data = request.get_json()
+    code = data.get('code', '')
+    error = data.get('error', '')
+    attempt = data.get('attempt', 1)
+    
+    if not code or not error:
+        return jsonify({'error': 'Code and error are required'}), 400
+    
+    try:
+        # Generate a new fix based on the previous code and error
+        fixed_code = generate_alternative_fix(code, error, attempt)
+        
+        if fixed_code:
+            return jsonify({
+                'success': True,
+                'fixed_code': fixed_code
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': 'Could not generate a new fix'
+            })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 @app.route('/api/execute', methods=['POST'])
@@ -499,6 +697,20 @@ def save_markdown():
 
 @app.route('/api/git/save', methods=['POST'])
 def save_to_git():
+    """Save content to a file and commit it to Git with a custom message.
+    
+    This endpoint supports the auto-commit functionality for fixed code.
+    When a Python code block is fixed, the changes are automatically committed
+    to Git with a descriptive message.
+    
+    Request JSON parameters:
+        content (str): The content to save to the file
+        filename (str): The name of the file to save
+        message (str, optional): Custom commit message. Defaults to 'Auto-commit: Updated file'
+    
+    Returns:
+        JSON response with success status and message
+    """
     data = request.get_json()
     content = data.get('content')
     filename = data.get('filename')
@@ -610,7 +822,17 @@ def publish_repository():
 
 def main():
     """Run the Flask application."""
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    # Initialize our logging system
+    init_app(app)
+    
+    # Log application startup
+    logger.info('WebLama application starting up')
+    
+    # Get debug mode from environment
+    debug_mode = os.environ.get('DEBUG', 'false').lower() == 'true'
+    
+    # Run the Flask application
+    app.run(debug=debug_mode, host='0.0.0.0', port=5000)
 
 
 if __name__ == '__main__':

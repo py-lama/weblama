@@ -138,7 +138,12 @@ function updatePreview() {
     }
 }
 
-// Convert Python code blocks to tabbed interfaces
+/**
+ * Converts all Python code blocks in the preview to interactive tabbed interfaces.
+ * This function is automatically called when the preview is updated.
+ * It finds all Python code blocks, creates a tabbed interface for each one,
+ * and automatically executes the code.
+ */
 function convertPythonCodeBlocks() {
     let blockIndex = 0;
     document.querySelectorAll('#preview pre code.language-python').forEach((codeBlock) => {
@@ -224,7 +229,16 @@ function switchTab(blockId, tabName) {
     });
 }
 
-// Execute a specific code block
+/**
+ * Executes a Python code block and handles the results.
+ * This function is called automatically when a code block is rendered and
+ * can also be triggered manually by clicking the Run button.
+ * 
+ * The function sends the code to the server for execution, displays the results,
+ * and automatically applies and commits any fixes if the code has errors.
+ * 
+ * @param {string} blockId - The unique identifier for the code block to execute
+ */
 async function executeCodeBlock(blockId) {
     const container = document.querySelector(`.code-block-container[data-block-id="${blockId}"]`);
     const codePanel = container.querySelector('.code-block-content[data-tab="code"]');
@@ -389,11 +403,26 @@ function updateHistoryDisplay(blockId, historyElement) {
     historyElement.innerHTML = historyHtml;
 }
 
-// Apply fixed code to the original code block and auto-commit
-function applyFixedCode(blockId, fixType) {
+/**
+ * Applies fixed code to the original code block, automatically commits the changes to Git,
+ * executes the fixed code, and tries additional fixes if needed until the code works correctly.
+ * 
+ * This function implements an advanced workflow that:
+ * 1. Applies the fixed code and runs it
+ * 2. If successful, hides all fix tabs and shows the code
+ * 3. If unsuccessful, automatically tries to generate a new fix version
+ * 4. Continues this process until the code works correctly
+ * 
+ * @param {string} blockId - The unique identifier for the code block
+ * @param {string} fixType - The type of fix to apply (e.g., 'fixed1' or 'fixed2')
+ * @param {number} fixAttempt - The current fix attempt number (for recursive calls)
+ */
+async function applyFixedCode(blockId, fixType, fixAttempt = 1) {
     const container = document.querySelector(`.code-block-container[data-block-id="${blockId}"]`);
     const fixedPanel = container.querySelector(`.code-block-content[data-tab="${fixType}"]`);
     const codePanel = container.querySelector('.code-block-content[data-tab="code"]');
+    const consolePanel = container.querySelector('.code-block-content[data-tab="console"]');
+    const outputElement = consolePanel.querySelector('.code-block-output');
     
     // Get the fixed code
     const fixedCode = fixedPanel.querySelector('code').textContent;
@@ -402,22 +431,169 @@ function applyFixedCode(blockId, fixType) {
     codePanel.innerHTML = `<pre><code class="language-python">${escapeHtml(fixedCode)}</code></pre>`;
     hljs.highlightElement(codePanel.querySelector('code'));
     
-    // Switch to the code tab
-    switchTab(blockId, 'code');
-    
     // Update the editor content to reflect the changes
     updateEditorFromPreview();
     
     // Auto-commit the changes to Git
-    saveAndCommitChanges(`Auto-fixed Python code block #${blockId}`);
+    saveAndCommitChanges(`Auto-fixed Python code block #${blockId} (attempt ${fixAttempt})`);
     
     // Show a notification
-    showNotification('Fixed code applied and committed successfully!', 'success');
+    showNotification(`Applied fix version ${fixAttempt}`, 'info');
+    
+    // Execute the fixed code to see if it works correctly
+    outputElement.innerHTML = `<div class="code-block-loading">Executing fix attempt ${fixAttempt}...</div>`;
+    
+    // Switch to the console tab to show execution results
+    switchTab(blockId, 'console');
+    
+    try {
+        // Execute the fixed code
+        const response = await fetch('/api/execute', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                code: fixedCode
+            })
+        });
+        
+        const result = await response.json();
+        
+        // Update the console output with the execution result
+        if (result.success) {
+            // Code executed successfully, hide the fixed tabs
+            outputElement.innerHTML = `<div class="code-block-success">${escapeHtml(result.output)}</div>`;
+            
+            // Hide all fixed tabs since the code now works correctly
+            const fixedTabs = container.querySelectorAll('.code-block-tab[data-tab^="fixed"]');
+            fixedTabs.forEach(tab => {
+                tab.style.display = 'none';
+            });
+            
+            // Add execution to history
+            addToHistory(blockId, fixedCode, result.output, null);
+            
+            showNotification('Code fixed and working correctly!', 'success');
+            
+            // Wait a moment to show the console results, then switch to Code tab
+            setTimeout(() => {
+                switchTab(blockId, 'code');
+            }, 1500);
+        } else {
+            // Code still has errors, show the error message
+            outputElement.innerHTML = `<div class="code-block-error">${escapeHtml(result.error)}</div>`;
+            
+            // Add execution to history
+            addToHistory(blockId, fixedCode, null, result.error);
+            
+            // If we've tried less than 3 fix attempts, try to generate a new fix
+            if (fixAttempt < 3) {
+                showNotification(`Fix attempt ${fixAttempt} failed. Trying another approach...`, 'warning');
+                
+                // Wait a moment to show the error before trying a new fix
+                setTimeout(async () => {
+                    await generateNewFixVersion(blockId, fixedCode, result.error, fixAttempt + 1);
+                }, 1500);
+            } else {
+                showNotification('Maximum fix attempts reached. Please edit the code manually.', 'error');
+            }
+        }
+    } catch (error) {
+        outputElement.innerHTML = `<div class="code-block-error">Error executing code: ${error.message}</div>`;
+    }
 }
 
-// Function to show notifications
+/**
+ * Generates a new fix version based on the previous fix attempt and its error.
+ * Creates a new tab for the fix and automatically applies it.
+ * 
+ * @param {string} blockId - The unique identifier for the code block
+ * @param {string} previousCode - The code from the previous fix attempt
+ * @param {string} error - The error message from the previous fix attempt
+ * @param {number} fixAttempt - The current fix attempt number
+ */
+async function generateNewFixVersion(blockId, previousCode, error, fixAttempt) {
+    const container = document.querySelector(`.code-block-container[data-block-id="${blockId}"]`);
+    const fixTabId = `fixed${fixAttempt}`;
+    
+    // Show loading indicator in console while generating new fix
+    const consolePanel = container.querySelector('.code-block-content[data-tab="console"]');
+    const outputElement = consolePanel.querySelector('.code-block-output');
+    outputElement.innerHTML = `<div class="code-block-loading">Generating fix attempt ${fixAttempt}...</div>`;
+    
+    try {
+        // Request a new fix from the server based on the previous code and error
+        const response = await fetch('/api/fix', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                code: previousCode,
+                error: error,
+                attempt: fixAttempt
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.fixed_code) {
+            // Create a new tab for this fix version if it doesn't exist
+            let tabElement = container.querySelector(`.code-block-tab[data-tab="${fixTabId}"]`);
+            let panelElement = container.querySelector(`.code-block-content[data-tab="${fixTabId}"]`);
+            
+            if (!tabElement) {
+                // Add the tab
+                tabElement = document.createElement('div');
+                tabElement.className = 'code-block-tab';
+                tabElement.dataset.tab = fixTabId;
+                tabElement.textContent = `Fixed v${fixAttempt}`;
+                tabElement.onclick = function() { switchTab(blockId, fixTabId); };
+                
+                // Insert tab before the Run button
+                const executeButton = container.querySelector('.execute-button');
+                container.querySelector('.code-block-tabs').insertBefore(tabElement, executeButton);
+                
+                // Create the panel
+                panelElement = document.createElement('div');
+                panelElement.className = 'code-block-content';
+                panelElement.dataset.tab = fixTabId;
+                container.appendChild(panelElement);
+            }
+            
+            // Update the panel content
+            panelElement.innerHTML = `
+                <pre><code class="language-python">${escapeHtml(result.fixed_code)}</code></pre>
+                <button class="execute-button" onclick="applyFixedCode('${blockId}', '${fixTabId}', ${fixAttempt})">Apply Fix</button>
+            `;
+            
+            // Apply syntax highlighting
+            const codeElement = panelElement.querySelector('code');
+            hljs.highlightElement(codeElement);
+            codeElement.style.whiteSpace = 'pre';
+            
+            // Automatically apply this new fix
+            await applyFixedCode(blockId, fixTabId, fixAttempt);
+        } else {
+            outputElement.innerHTML = `<div class="code-block-error">Could not generate a new fix. Please edit the code manually.</div>`;
+            showNotification('Could not generate a new fix', 'error');
+        }
+    } catch (error) {
+        outputElement.innerHTML = `<div class="code-block-error">Error generating new fix: ${error.message}</div>`;
+    }
+}
+
+/**
+ * Displays a notification message to the user.
+ * Notifications appear in the top-right corner and automatically fade out after 3 seconds.
+ * Used to provide feedback for actions like auto-commits and error messages.
+ * 
+ * @param {string} message - The message to display in the notification
+ * @param {string} type - The type of notification: 'info', 'success', 'error', or 'warning'
+ */
 function showNotification(message, type = 'info') {
-    // Create notification element if it doesn't exist
+    // Create notification container if it doesn't exist
     let notificationContainer = document.getElementById('notification-container');
     if (!notificationContainer) {
         notificationContainer = document.createElement('div');
@@ -442,7 +618,13 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
-// Function to save and commit changes to Git
+/**
+ * Saves the current content and commits the changes to Git with a custom message.
+ * This function is called automatically when fixed code is applied, and can also
+ * be called manually to commit changes.
+ * 
+ * @param {string} commitMessage - The commit message to use for the Git commit
+ */
 function saveAndCommitChanges(commitMessage) {
     // First save the current content
     saveMarkdown();
