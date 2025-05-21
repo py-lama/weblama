@@ -41,7 +41,35 @@ docker run -p 8081:80 weblama
 
 **WebLama is a frontend web application that communicates with the APILama backend.**
 
-To start the WebLama frontend server:
+### Using the WebLama CLI
+
+WebLama now includes a command-line interface (CLI) tool for easier management:
+
+```bash
+# Show help and available commands
+weblama --help
+
+# Start the WebLama frontend server
+weblama start
+
+# Start with custom port and API URL
+weblama start --port 8090 --api-url http://localhost:8080
+
+# Start and automatically open in browser
+weblama start --open
+
+# Check if APILama is running
+weblama health
+
+# List all markdown files
+weblama list
+```
+
+The CLI tool will start a web server and inject the API URL into the HTML, ensuring proper communication with the APILama backend.
+
+### Using npm directly
+
+You can also start WebLama using npm:
 
 ```bash
 # Start using npm
