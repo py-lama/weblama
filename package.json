@@ -2,24 +2,35 @@
   "name": "weblama",
   "version": "1.0.0",
   "description": "Web frontend for the PyLama ecosystem",
-  "main": "index.js",
+  "main": "static/index.js",
   "scripts": {
-    "start": "http-server ./static -p ${PORT:-8081}",
-    "build": "cp -r ./static/* ./dist/",
+    "start": "http-server ./static -p ${PORT:-8081} --cors",
+    "build": "mkdir -p dist && cp -r static/* dist/",
+    "dev": "http-server ./static -p ${PORT:-8081} --cors -c-1",
+    "lint": "eslint static/js/**/*.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
     "weblama",
     "pylama",
-    "frontend"
+    "frontend",
+    "markdown",
+    "code-execution"
   ],
   "author": "",
   "license": "MIT",
   "dependencies": {
     "axios": "^0.27.2",
     "codemirror": "^5.65.5",
+    "highlight.js": "^11.7.0",
     "http-server": "^14.1.1",
     "marked": "^4.0.18",
     "mermaid": "^9.1.7"
+  },
+  "devDependencies": {
+    "eslint": "^8.38.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
   }
 }
