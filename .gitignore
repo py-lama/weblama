@@ -1,3 +1,7 @@
+node_modules
+
+# PyCharm helpers
+.pycharm
 example.png
 example.db
 example.txt
