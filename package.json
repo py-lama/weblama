@@ -11,7 +11,13 @@
     "build": "mkdir -p dist && cp -r static/* dist/",
     "dev": "http-server ./static -p ${PORT:-8081} --cors -c-1",
     "lint": "eslint static/js/**/*.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
+    "test:cli": "jest tests/test_cli.js tests/test_cli_apilama.js",
+    "test:api": "jest tests/test_api_integration.js",
+    "test:frontend": "jest tests/test_frontend.js tests/test_frontend_apilama.js tests/test_file_loading.js",
+    "test:integration": "jest tests/test_integration.js",
+    "test:e2e": "jest tests/test_e2e.js",
+    "test:all": "./run_tests.sh",
     "postinstall": "chmod +x ./bin/weblama-cli.js"
   },
   "keywords": [
@@ -35,7 +41,10 @@
     "open": "^8.4.0"
   },
   "devDependencies": {
-    "eslint": "^8.38.0"
+    "eslint": "^8.38.0",
+    "jest": "^29.7.0",
+    "jsdom": "^21.1.2",
+    "supertest": "^6.3.4"
   },
   "engines": {
     "node": ">=14.0.0"

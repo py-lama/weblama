@@ -6,13 +6,19 @@ default: help
 
 help:
 	@echo "WebLama Frontend Makefile targets:"
-	@echo "  setup      Install npm dependencies"
-	@echo "  web        Start the WebLama web UI on port 8081 (default)"
-	@echo "  web PORT=xxxx   Start the web UI on custom port"
-	@echo "  dev        Start the development server with hot reloading"
-	@echo "  build      Build the static assets for production"
-	@echo "  lint       Run linting on JavaScript files"
-	@echo "  test       Run tests"
+	@echo "  setup          Install npm dependencies"
+	@echo "  web            Start the WebLama web UI on port 8081 (default)"
+	@echo "  web PORT=xxxx  Start the web UI on custom port"
+	@echo "  dev            Start the development server with hot reloading"
+	@echo "  build          Build the static assets for production"
+	@echo "  lint           Run linting on JavaScript files"
+	@echo "  test           Run all tests"
+	@echo "  test-cli       Run CLI tests"
+	@echo "  test-api       Run API integration tests"
+	@echo "  test-frontend  Run frontend tests"
+	@echo "  test-integration Run integration tests"
+	@echo "  test-e2e       Run end-to-end tests"
+	@echo "  test-docker    Run tests with Docker services"
 
 # Default values
 PORT ?= 8081
@@ -48,4 +54,30 @@ test: setup
 	@echo "Running tests..."
 	@npm test
 
-# This is now a frontend-only component, no CLI or Python tests
+# Run specific test suites
+test-cli: setup
+	@echo "Running CLI tests..."
+	@npm run test:cli
+
+test-api: setup
+	@echo "Running API integration tests..."
+	@npm run test:api
+
+test-frontend: setup
+	@echo "Running frontend tests..."
+	@npm run test:frontend
+
+test-integration: setup
+	@echo "Running integration tests..."
+	@npm run test:integration
+
+test-e2e: setup
+	@echo "Running end-to-end tests..."
+	@node tests/test_e2e.js
+
+# Run tests with Docker services
+test-docker: setup
+	@echo "Running tests with Docker services..."
+	@./run_tests.sh
+
+# This is now a frontend-only component that communicates with APILama
