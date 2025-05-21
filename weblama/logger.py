@@ -31,9 +31,22 @@ file_handler.setLevel(get_log_level())
 # Create formatter and add it to the handlers
 class RequestFormatter(logging.Formatter):
     def format(self, record):
-        record.url = getattr(g, 'url', 'No URL')
-        record.remote_addr = getattr(g, 'remote_addr', 'No IP')
-        record.method = getattr(g, 'method', 'No Method')
+        # Safely check if we're in a Flask request context
+        try:
+            from flask import has_request_context
+            if has_request_context():
+                record.url = getattr(g, 'url', request.path)
+                record.remote_addr = getattr(g, 'remote_addr', request.remote_addr)
+                record.method = getattr(g, 'method', request.method)
+            else:
+                record.url = 'No URL'
+                record.remote_addr = 'No IP'
+                record.method = 'No Method'
+        except Exception:
+            # If anything goes wrong, use default values
+            record.url = 'No URL'
+            record.remote_addr = 'No IP'
+            record.method = 'No Method'
         return super().format(record)
 
 formatter = RequestFormatter(
