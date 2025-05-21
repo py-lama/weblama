@@ -7,9 +7,9 @@
     "weblama": "./bin/weblama-cli.js"
   },
   "scripts": {
-    "start": "http-server ./static -p ${PORT:-8081} --cors",
+    "start": "http-server ./static -p ${PORT:-8084} --cors",
     "build": "mkdir -p dist && cp -r static/* dist/",
-    "dev": "http-server ./static -p ${PORT:-8081} --cors -c-1",
+    "dev": "http-server ./static -p ${PORT:-8084} --cors -c-1",
     "lint": "eslint static/js/**/*.js",
     "test": "jest",
     "test:cli": "jest tests/test_cli.js tests/test_cli_apilama.js",

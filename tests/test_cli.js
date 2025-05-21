@@ -92,11 +92,11 @@ describe('WebLama CLI Tests', () => {
     const cliWrapper = require('./mocks/cli-wrapper');
     
     // Call the start server function directly
-    const result = cliWrapper.startServer({ port: 8081 });
+    const result = cliWrapper.startServer({ port: 8084 });
 
     // Verify the result contains the expected configuration
     expect(result.success).toBe(true);
-    expect(result.port).toBe(8081);
+    expect(result.port).toBe(8084);
     expect(result.apiUrl).toBe('http://localhost:9080');
     expect(result.open).toBe(false);
   });

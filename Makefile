@@ -7,7 +7,7 @@ default: help
 help:
 	@echo "WebLama Frontend Makefile targets:"
 	@echo "  setup          Install npm dependencies"
-	@echo "  web            Start the WebLama web UI on port 8081 (default)"
+	@echo "  web            Start the WebLama web UI on port 8084 (default)"
 	@echo "  web PORT=xxxx  Start the web UI on custom port"
 	@echo "  dev            Start the development server with hot reloading"
 	@echo "  build          Build the static assets for production"
@@ -21,7 +21,7 @@ help:
 	@echo "  test-docker    Run tests with Docker services"
 
 # Default values
-PORT ?= 8081
+PORT ?= 8084
 HOST ?= 127.0.0.1
 
 # Install npm dependencies

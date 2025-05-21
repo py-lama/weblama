@@ -10,13 +10,13 @@ To build the Docker image, run the following command from the project directory:
 docker build -t weblama .
 ```
 
-To run the container, mapping port 8081 on the host to port 80 in the container:
+To run the container, mapping port 8084 on the host to port 80 in the container:
 
 ```bash
-docker run -p 8081:80 weblama
+docker run -p 8084:80 weblama
 ```
 
-Once the container is running, you can access the application at [http://localhost:8081](http://localhost:8081)
+Once the container is running, you can access the application at [http://localhost:8084](http://localhost:8084)
 
 ## Project Structure
 
