@@ -1,6 +1,6 @@
 # WebLama
 
-A command-line tool with syntax highlighting, Mermaid diagram support, automatic Python code execution and fixing, and Git integration.
+A frontend web application for the PyLama ecosystem with syntax highlighting, Mermaid diagram support, and markdown rendering capabilities.
 
 ![WebLama.png](weblama.png)
 
@@ -9,11 +9,10 @@ A command-line tool with syntax highlighting, Mermaid diagram support, automatic
 - **Rich Markdown Editor**: Syntax highlighting for various languages including Python, JavaScript, SQL, and Java
 - **Live Preview**: Real-time rendering of Markdown content with syntax highlighting
 - **Mermaid Diagram Support**: Create and visualize diagrams using Mermaid syntax
-- **Automatic Python Code Execution**: Python code blocks are automatically executed when rendered
-- **Automatic Code Fixing**: Detect and fix syntax errors, missing imports, and logical errors in Python code blocks
-- **Auto-Commit Fixed Code**: Changes from fixed code are automatically committed to Git with descriptive messages
-- **Git Version Control**: Track changes to your Markdown files and Mermaid diagrams
-- **Publishing Options**: Publish your repository to GitHub, GitLab, or Bitbucket
+- **Code Display**: Display code with syntax highlighting
+- **Responsive Design**: Works on desktop and mobile devices
+- **File Explorer**: Browse and manage markdown files
+- **Integration with APILama**: Communicates with backend services through the APILama gateway
 
 ## Installation
 
