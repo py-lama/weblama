@@ -1,3 +1,5 @@
+![obraz](https://github.com/user-attachments/assets/27a2cb35-8a08-4a04-b60e-0aadbf2b78b4)
+
 # WebLama
 
 a sleek and feature-rich frontend web application designed to work seamlessly with the #PyLama based on #Ollama ecosystem for developers, educators, and technical writers, 
