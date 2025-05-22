@@ -122,7 +122,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       // Initialize logger with config
       WebLamaLogger.init({
         enabled: true,
-        useServer: config.PYLOGS_ENABLED === true,
+        useServer: config.LOGLAMA_ENABLED === true,
         serverUrl: '/log',
         consoleOutput: true
       });

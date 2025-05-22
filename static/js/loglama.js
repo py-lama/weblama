@@ -174,7 +174,7 @@ class PyLogsClient {
 }
 
 // Create a global instance with default settings
-const pylogs = new PyLogsClient();
+const loglama = new PyLogsClient();
 
 // Export both the class and the default instance
-export { PyLogsClient, pylogs as default };
+export { PyLogsClient, loglama as default };

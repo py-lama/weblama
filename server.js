@@ -9,36 +9,36 @@ const axios = require('axios');
 dotenv.config();
 
 // Start the PyLogs bridge if enabled
-let pylogsBridge = null;
-const PYLOGS_ENABLED = process.env.WEBLAMA_PYLOGS_ENABLED === 'true';
-const PYLOGS_PORT = parseInt(process.env.WEBLAMA_PYLOGS_PORT || '8085');
-const PYLOGS_HOST = process.env.WEBLAMA_PYLOGS_HOST || '127.0.0.1';
+let loglamaBridge = null;
+const LOGLAMA_ENABLED = process.env.WEBLAMA_PYLOGS_ENABLED === 'true';
+const LOGLAMA_PORT = parseInt(process.env.WEBLAMA_PYLOGS_PORT || '8085');
+const LOGLAMA_HOST = process.env.WEBLAMA_PYLOGS_HOST || '127.0.0.1';
 
-if (PYLOGS_ENABLED) {
+if (LOGLAMA_ENABLED) {
   console.log('Starting PyLogs bridge...');
-  pylogsBridge = spawn('python3', [
+  loglamaBridge = spawn('python3', [
     path.join(__dirname, 'weblama', 'bridge.py'),
-    '--host', PYLOGS_HOST,
-    '--port', PYLOGS_PORT.toString()
+    '--host', LOGLAMA_HOST,
+    '--port', LOGLAMA_PORT.toString()
   ]);
   
-  pylogsBridge.stdout.on('data', (data) => {
+  loglamaBridge.stdout.on('data', (data) => {
     console.log(`PyLogs bridge: ${data}`);
   });
   
-  pylogsBridge.stderr.on('data', (data) => {
+  loglamaBridge.stderr.on('data', (data) => {
     console.error(`PyLogs bridge error: ${data}`);
   });
   
-  pylogsBridge.on('close', (code) => {
+  loglamaBridge.on('close', (code) => {
     console.log(`PyLogs bridge exited with code ${code}`);
   });
   
   // Handle process exit
   process.on('exit', () => {
-    if (pylogsBridge) {
+    if (loglamaBridge) {
       console.log('Stopping PyLogs bridge...');
-      pylogsBridge.kill();
+      loglamaBridge.kill();
     }
   });
 }
@@ -76,8 +76,8 @@ app.get('/config', (req, res) => {
     OLLAMA_FALLBACK_MODELS: process.env.OLLAMA_FALLBACK_MODELS || '',
     
     // PyLogs Configuration
-    PYLOGS_ENABLED: PYLOGS_ENABLED,
-    PYLOGS_URL: `http://${PYLOGS_HOST}:${PYLOGS_PORT}`
+    LOGLAMA_ENABLED: LOGLAMA_ENABLED,
+    LOGLAMA_URL: `http://${LOGLAMA_HOST}:${LOGLAMA_PORT}`
   };
   
   res.json(config);
@@ -85,13 +85,13 @@ app.get('/config', (req, res) => {
 
 // Proxy for PyLogs bridge
 app.post('/log', async (req, res) => {
-  if (!PYLOGS_ENABLED) {
+  if (!LOGLAMA_ENABLED) {
     console.log('[LOG]', req.body.level, req.body.message);
     return res.json({ status: 'ok', message: 'Logging disabled' });
   }
   
   try {
-    const response = await axios.post(`http://${PYLOGS_HOST}:${PYLOGS_PORT}`, req.body);
+    const response = await axios.post(`http://${LOGLAMA_HOST}:${LOGLAMA_PORT}`, req.body);
     res.json(response.data);
   } catch (error) {
     console.error('Error forwarding log to PyLogs bridge:', error.message);
@@ -106,8 +106,8 @@ app.post('/log', async (req, res) => {
 app.listen(port, '0.0.0.0', () => {
   console.log(`WebLama app listening at http://localhost:${port}`);
   
-  if (PYLOGS_ENABLED) {
-    console.log(`PyLogs bridge available at http://${PYLOGS_HOST}:${PYLOGS_PORT}`);
+  if (LOGLAMA_ENABLED) {
+    console.log(`PyLogs bridge available at http://${LOGLAMA_HOST}:${LOGLAMA_PORT}`);
   } else {
     console.log('PyLogs bridge is disabled');
   }
