@@ -67,10 +67,13 @@ async function loadMarkdownFiles() {
     try {
         // Get API URL from environment or use default
         const apiUrl = getApiUrl();
-        const response = await fetch(`${apiUrl}/api/weblama/markdown`);
+        console.log('Using API URL:', apiUrl);
+        
+        // Try the standard endpoint first
+        const response = await fetch(`${apiUrl}/api/files`);
         const data = await response.json();
         
-        if (data.status === 'success') {
+        if (data.status === 'success' && Array.isArray(data.files)) {
             markdownFiles = data.files;
             renderFileList(markdownFiles);
             
@@ -79,7 +82,7 @@ async function loadMarkdownFiles() {
                 openFile(markdownFiles[0].path);
             }
         } else {
-            showError('Failed to load files: ' + data.error);
+            showError('Failed to load files: ' + (data.error || 'Unknown error'));
         }
     } catch (error) {
         showError('Error loading files: ' + error.message);
@@ -91,11 +94,18 @@ async function loadMarkdownFiles() {
  * Get the API URL from environment variables or use default
  */
 function getApiUrl() {
-    // Check if API_URL is defined in window object (can be set by the server)
+    // First check if CONFIG is available (loaded from server)
+    if (window.CONFIG && window.CONFIG.API_URL) {
+        console.log('Using API URL from CONFIG:', window.CONFIG.API_URL);
+        return window.CONFIG.API_URL;
+    }
+    // Then check if API_URL is defined directly in window object
     if (window.API_URL) {
+        console.log('Using API URL from window.API_URL:', window.API_URL);
         return window.API_URL;
     }
     // Default to localhost if not specified
+    console.log('Using default API URL: http://localhost:8080');
     return 'http://localhost:8080';
 }
 

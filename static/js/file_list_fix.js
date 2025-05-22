@@ -14,10 +14,15 @@ async function loadFileListDirect() {
             return;
         }
         
-        // Fetch the file list from the API
-        console.log('Fetching files from:', `${window.CONFIG.API_URL}/api/files`);
+        // Get API URL using the same function as file_explorer.js
+        const apiUrl = typeof getApiUrl === 'function' ? getApiUrl() : 
+                      (window.CONFIG && window.CONFIG.API_URL ? window.CONFIG.API_URL : 
+                       (window.API_URL || 'http://localhost:8080'));
         
-        const response = await fetch(`${window.CONFIG.API_URL}/api/files`);
+        // Fetch the file list from the API
+        console.log('Fetching files from:', `${apiUrl}/api/files`);
+        
+        const response = await fetch(`${apiUrl}/api/files`);
         console.log('Response status:', response.status);
         const data = await response.json();
         console.log('Response data:', data);
@@ -63,10 +68,15 @@ async function openFileDirect(filePath) {
     try {
         console.log('Opening file:', filePath);
         
+        // Get API URL using the same function as above
+        const apiUrl = typeof getApiUrl === 'function' ? getApiUrl() : 
+                      (window.CONFIG && window.CONFIG.API_URL ? window.CONFIG.API_URL : 
+                       (window.API_URL || 'http://localhost:8080'));
+        
         // Fetch the file content from the API
         // Extract just the filename from the path
         const filename = filePath.split('/').pop();
-        const response = await fetch(`${window.CONFIG.API_URL}/api/file?filename=${encodeURIComponent(filename)}`);
+        const response = await fetch(`${apiUrl}/api/file?filename=${encodeURIComponent(filename)}`);
         const data = await response.json();
         
         console.log('File content response:', data);
