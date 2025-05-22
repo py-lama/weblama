@@ -1,6 +1,6 @@
 # Makefile for WebLama Frontend
 
-.PHONY: help setup web dev build lint test docker-test docker-build docker-dev docker-clean
+.PHONY: help setup web dev build lint test collect-logs docker-test docker-build docker-dev docker-clean
 
 default: help
 
@@ -9,6 +9,8 @@ help:
 	@echo "  setup          Install npm dependencies"
 	@echo "  web            Start the WebLama web UI on port 8084 (default)"
 	@echo "  web PORT=xxxx  Start the web UI on custom port"
+	@echo "  web COLLECT=1  Start the web UI with log collection enabled"
+	@echo "  collect-logs   Start the LogLama log collector for WebLama logs"
 	@echo "  dev            Start the development server with hot reloading"
 	@echo "  build          Build the static assets for production"
 	@echo "  lint           Run linting on JavaScript files"
@@ -27,15 +29,26 @@ help:
 # Default values
 PORT ?= 8084
 HOST ?= 127.0.0.1
+COLLECT ?= 0
+COLLECT_INTERVAL ?= 300
 
 # Install npm dependencies
 setup:
 	@echo "Installing npm dependencies..."
 	@npm install
 
+# Start the LogLama log collector for WebLama logs
+collect-logs:
+	@echo "Starting LogLama log collector for WebLama logs..."
+	@python3 scripts/start_log_collector.py --interval $(COLLECT_INTERVAL) $(if $(filter 1,$(VERBOSE)),--verbose,)
+
 # Run the web server using http-server
 web: setup
 	@echo "Starting WebLama web server on port $(PORT)..."
+	@if [ "$(COLLECT)" = "1" ]; then \
+		echo "Starting with log collection enabled"; \
+		python3 scripts/start_log_collector.py --interval $(COLLECT_INTERVAL) $(if $(filter 1,$(VERBOSE)),--verbose,); \
+	fi
 	@PORT=$(PORT) npm start
 
 # Run the development server with hot reloading

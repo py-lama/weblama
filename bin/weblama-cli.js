@@ -20,8 +20,8 @@ const packageJson = require('../package.json');
 const version = packageJson.version;
 
 // Default configuration
-const DEFAULT_PORT = 7081;
-const DEFAULT_API_URL = 'http://localhost:7080';
+const DEFAULT_PORT = 8081;
+const DEFAULT_API_URL = 'http://localhost:9130';
 
 // Configure the CLI
 program

@@ -27,6 +27,23 @@ try:
 except ImportError as e:
     print(f"PyLogs import error: {e}")
     LOGLAMA_AVAILABLE = False
+    
+    # Try to add loglama to path if it's not installed
+    try:
+        import sys
+        from pathlib import Path
+        loglama_path = Path(__file__).parent.parent.parent.parent / 'loglama'
+        if loglama_path.exists() and str(loglama_path) not in sys.path:
+            sys.path.insert(0, str(loglama_path))
+            print(f"Added LogLama path: {loglama_path}")
+            # Try importing again
+            from loglama.config.env_loader import load_env, get_env
+            from loglama.utils import configure_logging, LogContext, capture_context
+            from loglama.formatters import ColoredFormatter, JSONFormatter
+            from loglama.handlers import SQLiteHandler, EnhancedRotatingFileHandler
+            LOGLAMA_AVAILABLE = True
+    except ImportError as e2:
+        print(f"Second PyLogs import attempt failed: {e2}")
 
 # Set up basic logging as a fallback
 logging.basicConfig(
@@ -55,7 +72,8 @@ def init_logging():
     log_dir = get_env('WEBLAMA_LOG_DIR', os.path.join(os.path.dirname(os.path.dirname(__file__)), 'logs'))
     db_enabled = get_env('WEBLAMA_DB_LOGGING', 'true').lower() in ('true', 'yes', '1')
     db_path = get_env('WEBLAMA_DB_PATH', os.path.join(log_dir, 'weblama.db'))
-    json_format = get_env('WEBLAMA_JSON_LOGS', 'false').lower() in ('true', 'yes', '1')
+    json_format = get_env('WEBLAMA_JSON_LOGS', 'true').lower() in ('true', 'yes', '1')  # Default to JSON format for better integration
+    structured_logging = get_env('WEBLAMA_STRUCTURED_LOGGING', 'true').lower() in ('true', 'yes', '1')
     
     # Ensure log directory exists
     os.makedirs(log_dir, exist_ok=True)
@@ -69,8 +87,16 @@ def init_logging():
         file_path=os.path.join(log_dir, 'weblama.log'),
         database=db_enabled,
         db_path=db_path,
-        json=json_format,
-        context_filter=True
+        json=json_format,  # Use JSON format for better integration with LogLama
+        context_filter=True,
+        structured=structured_logging  # Use structured logging for better integration
+    )
+    
+    # Add standard context information that will be included in all logs
+    LogContext.set_context(
+        component='weblama',
+        service='weblama',
+        version=get_env('WEBLAMA_VERSION', '1.0.0')
     )
     
     # Log initialization

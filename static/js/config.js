@@ -2,8 +2,8 @@
 
 // Default values
 window.CONFIG = {
-    API_URL: 'http://localhost:8080',
-    API_PORT: '8080',
+    API_URL: 'http://localhost:9130',
+    API_PORT: '9130',
     API_HOST: 'localhost',
     MARKDOWN_DIR: '~/github/py-lama/weblama/markdown'
 };
