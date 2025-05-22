@@ -188,9 +188,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Function to delete a file
+/**
+ * Delete a file using the API
+ * @param {string} filename - The name of the file to delete
+ * @param {string} filePath - The full path of the file to delete
+ */
 async function deleteFile(filename, filePath) {
     console.log('deleteFile called with:', { filename, filePath });
+    
+    // Make sure we have a filename
+    if (!filename) {
+        console.error('No filename provided to deleteFile function');
+        return;
+    }
     
     // Extract just the filename if the full path was passed
     const actualFilename = filename.includes('/') ? filename.split('/').pop() : filename;
@@ -198,6 +208,7 @@ async function deleteFile(filename, filePath) {
     
     // Ask for confirmation before deleting
     if (!confirm(`Are you sure you want to delete the file '${actualFilename}'?`)) {
+        console.log('User cancelled file deletion');
         return;
     }
     
@@ -205,31 +216,46 @@ async function deleteFile(filename, filePath) {
         console.log('Deleting file:', actualFilename);
         console.log('API URL:', window.CONFIG.API_URL);
         
+        // Construct the API URL
+        const apiUrl = `${window.CONFIG.API_URL}/api/file?filename=${encodeURIComponent(actualFilename)}`;
+        console.log('Delete API URL:', apiUrl);
+        
         // Call the API to delete the file
-        const response = await fetch(`${window.CONFIG.API_URL}/api/file?filename=${encodeURIComponent(actualFilename)}`, {
-            method: 'DELETE'
+        const response = await fetch(apiUrl, {
+            method: 'DELETE',
+            headers: {
+                'Accept': 'application/json'
+            }
         });
         
+        // Check if the response is ok
+        if (!response.ok) {
+            throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+        }
+        
+        // Parse the response
         const data = await response.json();
         console.log('Delete response:', data);
         
         if (data.status === 'success') {
-            // If the deleted file is currently open, clear the editor
-            if (window.currentFile === filePath) {
-                if (window.editor) {
-                    window.editor.setValue('');
-                }
+            // Show success message
+            console.log(`File '${actualFilename}' deleted successfully`);
+            
+            // If the deleted file was the current file, clear the editor
+            if (window.currentFile && window.currentFile.includes(actualFilename)) {
+                document.getElementById('markdown-editor').value = '';
                 window.currentFile = null;
+                console.log('Cleared editor because current file was deleted');
             }
             
             // Reload the file list
+            console.log('Reloading file list after deletion');
             loadFileListDirect();
-            
-            // Show a success message
-            alert(data.message || 'File deleted successfully');
         } else {
-            // Show an error message
-            alert(data.message || 'Failed to delete file');
+            // Show error message
+            const errorMessage = data.message || 'Unknown error';
+            console.error(`Error deleting file: ${errorMessage}`);
+            alert(`Error deleting file: ${errorMessage}`);
         }
     } catch (error) {
         console.error('Error deleting file:', error);
@@ -293,6 +319,9 @@ function createFileItem(parentElement, file) {
     deleteBtn.onclick = function(event) {
         event.stopPropagation();  // Prevent the file from opening
         console.log('Delete button clicked for file:', file.name);
+        console.log('File path:', file.path);
+        console.log('Event target:', event.target);
+        console.log('Event currentTarget:', event.currentTarget);
         deleteFile(file.name, file.path);
     };
     

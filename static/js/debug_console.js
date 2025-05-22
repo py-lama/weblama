@@ -15,10 +15,19 @@ let refreshInterval = null;
  * Initialize the debug console
  */
 function initDebugConsole() {
+    console.log('Initializing debug console...');
+    
+    // Check if the debug console already exists
+    if (document.getElementById('debug-console')) {
+        console.log('Debug console already exists');
+        return;
+    }
+    
     // Create the debug console container
     const container = document.createElement('div');
     container.id = 'debug-console';
     container.className = 'debug-console';
+    container.style.display = 'none'; // Initially hidden
     container.innerHTML = `
         <div class="debug-console-header">
             <h3>Debug Console</h3>
@@ -38,6 +47,7 @@ function initDebugConsole() {
     `;
     
     document.body.appendChild(container);
+    console.log('Debug console element added to DOM');
     
     // Get the log container
     logContainer = document.getElementById('debug-console-logs');
@@ -55,8 +65,13 @@ function initDebugConsole() {
         }
     });
     
+    // Add initial logs
+    addInitialLogs();
+    
     // Check if debug mode is enabled
     checkDebugMode();
+    
+    console.log('Debug console initialized successfully');
 }
 
 /**
@@ -65,31 +80,33 @@ function initDebugConsole() {
 async function checkDebugMode() {
     try {
         // Wait for configuration to be loaded
-        if (window.CONFIG && window.CONFIG.DEBUG === 'true') {
-            console.log('Debug mode is enabled');
-            debugConsoleEnabled = true;
-            document.getElementById('debug-console').style.display = 'block';
-            
-            // Add some initial log entries
-            addInitialLogs();
+        if (!window.CONFIG) {
+            console.log('Waiting for configuration to load...');
+            setTimeout(checkDebugMode, 500);
+            return;
+        }
+        
+        // Always enable the debug console functionality, but keep it hidden by default
+        // This allows toggling with Ctrl+Shift+D even if debug mode is disabled
+        debugConsoleEnabled = true;
+        
+        // Only show the debug console by default if debug mode is enabled
+        if (window.CONFIG.DEBUG === 'true') {
+            console.log('Debug mode is enabled, showing debug console by default');
+            // Keep the console hidden initially, user can toggle with Ctrl+Shift+D
+            // document.getElementById('debug-console').style.display = 'flex';
             
             refreshLogs();
             startAutoRefresh();
         } else {
-            // If CONFIG isn't available yet, wait for it
-            if (!window.CONFIG) {
-                console.log('Waiting for configuration to load...');
-                setTimeout(checkDebugMode, 500);
-                return;
-            }
-            console.log('Debug mode is disabled');
-            debugConsoleEnabled = false;
+            console.log('Debug mode is disabled, debug console will be hidden by default');
+            // Keep the console hidden, but it can still be toggled with Ctrl+Shift+D
             document.getElementById('debug-console').style.display = 'none';
         }
     } catch (error) {
         console.error('Error checking debug mode:', error);
-        debugConsoleEnabled = false;
-        document.getElementById('debug-console').style.display = 'none';
+        // Even if there's an error, still enable the debug console functionality
+        debugConsoleEnabled = true;
     }
 }
 
@@ -97,23 +114,30 @@ async function checkDebugMode() {
  * Toggle the debug console visibility
  */
 function toggleDebugConsole() {
-    const console = document.getElementById('debug-console');
+    const debugConsole = document.getElementById('debug-console');
+    if (!debugConsole) {
+        console.error('Debug console element not found!');
+        // Try to initialize it if it doesn't exist
+        initDebugConsole();
+        return;
+    }
+    
     console.log('Toggling debug console visibility');
     
     // Check the computed style instead of the inline style
-    const computedStyle = window.getComputedStyle(console);
+    const computedStyle = window.getComputedStyle(debugConsole);
     const isVisible = computedStyle.display !== 'none';
     
     if (!isVisible) {
         console.log('Showing debug console');
-        console.style.display = 'flex';  // Use flex to match the CSS
+        debugConsole.style.display = 'flex';  // Use flex to match the CSS
         refreshLogs();
         if (autoRefresh) {
             startAutoRefresh();
         }
     } else {
         console.log('Hiding debug console');
-        console.style.display = 'none';
+        debugConsole.style.display = 'none';
         stopAutoRefresh();
     }
 }
@@ -318,7 +342,8 @@ document.addEventListener('DOMContentLoaded', initDebugConsole);
 
 // Add keyboard shortcut (Ctrl+Shift+D) to toggle debug console
 document.addEventListener('keydown', (e) => {
-    if (e.ctrlKey && e.shiftKey && e.key === 'D') {
+    if (e.ctrlKey && e.shiftKey && (e.key === 'D' || e.key === 'd')) {
+        console.log('Debug console keyboard shortcut detected');
         toggleDebugConsole();
         e.preventDefault();
     }
