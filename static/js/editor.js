@@ -127,45 +127,99 @@ window.showNotification = function(message, type = 'info') {
     alert(message);
 };
 
+/**
+ * Extract Python code blocks from markdown content
+ * @param {string} markdownContent - The markdown content to parse
+ * @returns {Array} - Array of Python code blocks
+ */
+function extractPythonCodeBlocks(markdownContent) {
+    const pythonCodeBlocks = [];
+    
+    // Regular expression to match code blocks with python or python3 language identifier
+    const regex = /```(python|python3)([\s\S]*?)```/g;
+    
+    let match;
+    while ((match = regex.exec(markdownContent)) !== null) {
+        // match[2] contains the code inside the code block
+        const code = match[2].trim();
+        if (code) {
+            pythonCodeBlocks.push(code);
+        }
+    }
+    
+    console.log(`Found ${pythonCodeBlocks.length} Python code blocks`);
+    return pythonCodeBlocks;
+};
+
 // Execute all Python code blocks
 async function executeAllCodeBlocks(markdownContent) {
     try {
-        const response = await fetch(`${window.CONFIG.API_URL}/api/execute`, {
+        console.log('Executing all code blocks...');
+        // Extract Python code blocks from markdown content
+        const pythonCodeBlocks = extractPythonCodeBlocks(markdownContent);
+        
+        if (pythonCodeBlocks.length === 0) {
+            showNotification('No Python code blocks found', 'info');
+            return;
+        }
+        
+        // Use the pybox/execute endpoint for code execution
+        const response = await fetch(`${window.CONFIG.API_URL}/api/pybox/execute`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                content: markdownContent
+                code: pythonCodeBlocks.join('\n\n# Next code block\n\n'),
+                options: {
+                    timeout: 10,  // 10 seconds timeout
+                    memory_limit: 128  // 128MB memory limit
+                }
             })
         });
         
         const data = await response.json();
+        console.log('Execution response:', data);
         
-        if (data.results) {
-            const resultsElement = document.getElementById('results');
-            if (resultsElement) {
-                resultsElement.innerHTML = '';
+        const resultsElement = document.getElementById('results');
+        if (resultsElement) {
+            resultsElement.innerHTML = '';
+            
+            // Check if we have a successful response
+            if (data.status === 'success') {
+                // Create a result item for the execution
+                const resultItem = document.createElement('div');
+                resultItem.className = 'result-item success';
                 
-                data.results.forEach(result => {
-                    const resultItem = document.createElement('div');
-                    resultItem.className = `result-item ${result.success ? 'success' : 'error'}`;
-                    
-                    resultItem.innerHTML = `
-                        <div class="result-code">${result.code}</div>
-                        <div class="result-output">${result.output}</div>
-                    `;
-                    
-                    resultsElement.appendChild(resultItem);
-                });
+                // Format the output with syntax highlighting if possible
+                const formattedOutput = data.output.replace(/\n/g, '<br>');
+                
+                resultItem.innerHTML = `
+                    <div class="result-header">Python Code Execution Results:</div>
+                    <div class="result-output">${formattedOutput}</div>
+                `;
+                
+                resultsElement.appendChild(resultItem);
                 
                 // Show the results container
                 document.getElementById('results-container').classList.remove('hidden');
+                showNotification('Code executed successfully', 'success');
+            } else {
+                // Handle error response
+                const resultItem = document.createElement('div');
+                resultItem.className = 'result-item error';
+                
+                resultItem.innerHTML = `
+                    <div class="result-header">Error:</div>
+                    <div class="result-output">${data.error || 'Unknown error'}</div>
+                `;
+                
+                resultsElement.appendChild(resultItem);
+                
+                // Show the results container
+                document.getElementById('results-container').classList.remove('hidden');
+                showNotification(`Error: ${data.error || 'Unknown error'}`, 'error');
             }
-            
-            showNotification('Code executed successfully', 'success');
-        } else {
-            showNotification(`Error: ${data.error}`, 'error');
         }
     } catch (error) {
         showNotification(`Error executing code: ${error.message}`, 'error');

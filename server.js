@@ -21,10 +21,19 @@ app.get('/', (req, res) => {
 app.get('/config', (req, res) => {
   // Only expose specific environment variables to the frontend
   const config = {
+    // API Configuration
     API_URL: process.env.API_URL || 'http://localhost:8080',
     API_PORT: process.env.API_PORT || '8080',
     API_HOST: process.env.API_HOST || 'localhost',
-    MARKDOWN_DIR: process.env.MARKDOWN_DIR || './markdown'
+    MARKDOWN_DIR: process.env.MARKDOWN_DIR || './markdown',
+    
+    // Debug Configuration
+    DEBUG: process.env.DEBUG || 'false',
+    DEBUG_MODE: process.env.DEBUG_MODE || 'false',
+    
+    // Ollama Configuration
+    OLLAMA_MODEL: process.env.OLLAMA_MODEL || 'phi:2.7b',
+    OLLAMA_FALLBACK_MODELS: process.env.OLLAMA_FALLBACK_MODELS || ''
   };
   
   res.json(config);

@@ -16,63 +16,41 @@ async function loadFileListDirect() {
         
         // Fetch the file list from the API
         console.log('Fetching files from:', `${window.CONFIG.API_URL}/api/files`);
-            const response = await fetch(`${window.CONFIG.API_URL}/api/files`);
-            console.log('Response status:', response.status);
-            const data = await response.json();
-            console.log('Response data:', data);
+        
+        const response = await fetch(`${window.CONFIG.API_URL}/api/files`);
+        console.log('Response status:', response.status);
+        const data = await response.json();
+        console.log('Response data:', data);
+        
+        // Check if we got a successful response
+        if (data.status === 'success' && Array.isArray(data.files)) {
+            // Store the files globally
+            window.markdownFiles = data.files;
+        
+            // Clear the loading message
+            fileListElement.innerHTML = '';
             
-            // Check if we got a successful response
-            if (data.status === 'success' && Array.isArray(data.files)) {
-                // Store the files globally
-                window.markdownFiles = data.files;
+            // Check if we have any files
+            if (data.files.length === 0) {
+                fileListElement.innerHTML = '<div class="no-files">No markdown files found</div>';
+                return;
+            }
             
-                // Clear the loading message
-                fileListElement.innerHTML = '';
-                
-                // Check if we have any files
-                if (data.files.length === 0) {
-                    fileListElement.innerHTML = '<div class="no-files">No markdown files found</div>';
-                    return;
-                }
-                
-                // Create a file item for each file
-                data.files.forEach(file => {
-                    const fileItem = document.createElement('div');
-                    fileItem.className = 'file-item';
-                    fileItem.dataset.path = file.path;
-                
-                    // Add active class if this is the current file
-                    if (window.currentFile && window.currentFile === file.path) {
-                        fileItem.classList.add('active');
-                    }
-                    
-                    fileItem.innerHTML = `
-                        <span class="file-icon">📄</span>
-                        <div class="file-info">
-                            <span class="file-name">${file.name}</span>
-                            <span class="file-path">${file.path}</span>
-                        </div>
-                    `;
-                    
-                    // Add click event to open the file
-                    fileItem.addEventListener('click', () => {
-                        console.log('Clicked file:', file.path);
-                        openFileDirect(file.path);
-                    });
-                    
-                    fileListElement.appendChild(fileItem);
+            // Create a file item for each file
+            data.files.forEach(file => {
+                createFileItem(fileListElement, file);
             });
-            
+        
             console.log('File list loaded successfully');
             
             // Load the first file if no file is currently open
             if (data.files.length > 0 && !window.currentFile) {
                 openFileDirect(data.files[0].path);
             }
-            } else {
-                console.error('Failed to load files:', data.error || 'Unknown error');
-                fileListElement.innerHTML = '<div class="error">Failed to load files</div>';
-            }
+        } else {
+            console.error('Failed to load files:', data.error || 'Unknown error');
+            fileListElement.innerHTML = '<div class="error">Failed to load files</div>';
+        }
     } catch (error) {
         console.error('Error loading files:', error);
         document.getElementById('markdown-files').innerHTML = 
@@ -209,6 +187,135 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// Function to delete a file
+async function deleteFile(filename, filePath) {
+    console.log('deleteFile called with:', { filename, filePath });
+    
+    // Extract just the filename if the full path was passed
+    const actualFilename = filename.includes('/') ? filename.split('/').pop() : filename;
+    console.log('Extracted filename:', actualFilename);
+    
+    // Ask for confirmation before deleting
+    if (!confirm(`Are you sure you want to delete the file '${actualFilename}'?`)) {
+        return;
+    }
+    
+    try {
+        console.log('Deleting file:', actualFilename);
+        console.log('API URL:', window.CONFIG.API_URL);
+        
+        // Call the API to delete the file
+        const response = await fetch(`${window.CONFIG.API_URL}/api/file?filename=${encodeURIComponent(actualFilename)}`, {
+            method: 'DELETE'
+        });
+        
+        const data = await response.json();
+        console.log('Delete response:', data);
+        
+        if (data.status === 'success') {
+            // If the deleted file is currently open, clear the editor
+            if (window.currentFile === filePath) {
+                if (window.editor) {
+                    window.editor.setValue('');
+                }
+                window.currentFile = null;
+            }
+            
+            // Reload the file list
+            loadFileListDirect();
+            
+            // Show a success message
+            alert(data.message || 'File deleted successfully');
+        } else {
+            // Show an error message
+            alert(data.message || 'Failed to delete file');
+        }
+    } catch (error) {
+        console.error('Error deleting file:', error);
+        alert(`Error deleting file: ${error.message}`);
+    }
+}
+
+/**
+ * Create a file item element and add it to the parent element
+ * @param {HTMLElement} parentElement - The parent element to add the file item to
+ * @param {Object} file - The file object with name and path properties
+ */
+function createFileItem(parentElement, file) {
+    // Create the file item element
+    const fileItem = document.createElement('div');
+    fileItem.className = 'file-item';
+    fileItem.dataset.path = file.path;
+    fileItem.dataset.name = file.name;
+    
+    // Add active class if this is the current file
+    if (window.currentFile && window.currentFile === file.path) {
+        fileItem.classList.add('active');
+    }
+    
+    // Create the file icon
+    const fileIcon = document.createElement('span');
+    fileIcon.className = 'file-icon';
+    fileIcon.textContent = '📄';
+    fileItem.appendChild(fileIcon);
+    
+    // Create the file info container
+    const fileInfo = document.createElement('div');
+    fileInfo.className = 'file-info';
+    
+    // Create the file name element
+    const fileName = document.createElement('span');
+    fileName.className = 'file-name';
+    fileName.textContent = file.name;
+    fileInfo.appendChild(fileName);
+    
+    // Create the file path element
+    const filePath = document.createElement('span');
+    filePath.className = 'file-path';
+    filePath.textContent = file.path;
+    fileInfo.appendChild(filePath);
+    
+    // Add the file info to the file item
+    fileItem.appendChild(fileInfo);
+    
+    // Create the file actions container
+    const fileActions = document.createElement('div');
+    fileActions.className = 'file-actions';
+    
+    // Create the delete button
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'delete-file-btn';
+    deleteBtn.title = 'Delete file';
+    deleteBtn.textContent = '🗑️';
+    
+    // Add click event to the delete button
+    deleteBtn.onclick = function(event) {
+        event.stopPropagation();  // Prevent the file from opening
+        console.log('Delete button clicked for file:', file.name);
+        deleteFile(file.name, file.path);
+    };
+    
+    // Add the delete button to the file actions
+    fileActions.appendChild(deleteBtn);
+    
+    // Add the file actions to the file item
+    fileItem.appendChild(fileActions);
+    
+    // Add click event to the file item to open the file
+    fileItem.onclick = function(event) {
+        // Don't open the file if the delete button was clicked
+        if (event.target.closest('.delete-file-btn')) {
+            return;
+        }
+        
+        console.log('Clicked file:', file.path);
+        openFileDirect(file.path);
+    };
+    
+    // Add the file item to the parent element
+    parentElement.appendChild(fileItem);
+}
 
 // Add a function to reload the file list
 window.reloadFileList = loadFileListDirect;

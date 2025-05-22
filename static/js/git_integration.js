@@ -63,27 +63,30 @@ if (publishBtn) {
 // Close Publish Modal
 if (publishClose) {
     publishClose.addEventListener('click', () => {
-    publishModal.classList.remove('show');
-    publishModal.classList.add('hidden');
-});
+        publishModal.classList.remove('show');
+        publishModal.classList.add('hidden');
+    });
+}
 
 // Handle provider change
-providerSelect.addEventListener('change', () => {
-    const provider = providerSelect.value;
-    
-    // Show/hide provider-specific fields
-    document.querySelectorAll('.github-gitlab').forEach(el => {
-        el.style.display = (provider === 'github' || provider === 'gitlab') ? 'block' : 'none';
+if (providerSelect) {
+    providerSelect.addEventListener('change', () => {
+        const provider = providerSelect.value;
+        
+        // Show/hide provider-specific fields
+        document.querySelectorAll('.github-gitlab').forEach(el => {
+            el.style.display = (provider === 'github' || provider === 'gitlab') ? 'block' : 'none';
+        });
+        
+        document.querySelectorAll('.gitlab-only').forEach(el => {
+            el.style.display = provider === 'gitlab' ? 'block' : 'none';
+        });
+        
+        document.querySelectorAll('.bitbucket-only').forEach(el => {
+            el.style.display = provider === 'bitbucket' ? 'block' : 'none';
+        });
     });
-    
-    document.querySelectorAll('.gitlab-only').forEach(el => {
-        el.style.display = provider === 'gitlab' ? 'block' : 'none';
-    });
-    
-    document.querySelectorAll('.bitbucket-only').forEach(el => {
-        el.style.display = provider === 'bitbucket' ? 'block' : 'none';
-    });
-});
+}
 
 // Load commit history
 async function loadCommitHistory(filename) {
@@ -356,4 +359,3 @@ window.addEventListener('click', (event) => {
         publishModal.classList.add('hidden');
     }
 });
-}
