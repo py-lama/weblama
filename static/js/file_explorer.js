@@ -11,7 +11,8 @@
 
 // Store the current list of files
 let markdownFiles = [];
-let currentFile = null;
+// Use the existing global currentFile variable instead of redeclaring it
+// let currentFile = null;
 let lastSavedContent = '';
 
 /**

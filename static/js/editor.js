@@ -115,18 +115,70 @@ editor.on('change', () => {
 updatePreview(editor);
 
 // Execute all Python code blocks
-document.getElementById('run-all-btn').addEventListener('click', async () => {
+document.getElementById('execute-button').addEventListener('click', async () => {
     const markdownContent = editor.getValue();
     await executeAllCodeBlocks(markdownContent);
 });
 
+// Show notification function
+window.showNotification = function(message, type = 'info') {
+    console.log(`Notification: ${message} (${type})`);
+    // You could implement a proper notification system here
+    alert(message);
+};
+
+// Execute all Python code blocks
+async function executeAllCodeBlocks(markdownContent) {
+    try {
+        const response = await fetch(`${window.CONFIG.API_URL}/api/execute`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                content: markdownContent
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.results) {
+            const resultsElement = document.getElementById('results');
+            if (resultsElement) {
+                resultsElement.innerHTML = '';
+                
+                data.results.forEach(result => {
+                    const resultItem = document.createElement('div');
+                    resultItem.className = `result-item ${result.success ? 'success' : 'error'}`;
+                    
+                    resultItem.innerHTML = `
+                        <div class="result-code">${result.code}</div>
+                        <div class="result-output">${result.output}</div>
+                    `;
+                    
+                    resultsElement.appendChild(resultItem);
+                });
+                
+                // Show the results container
+                document.getElementById('results-container').classList.remove('hidden');
+            }
+            
+            showNotification('Code executed successfully', 'success');
+        } else {
+            showNotification(`Error: ${data.error}`, 'error');
+        }
+    } catch (error) {
+        showNotification(`Error executing code: ${error.message}`, 'error');
+    }
+}
+
 // Save markdown content
-document.getElementById('save-btn').addEventListener('click', async () => {
+document.getElementById('save-button').addEventListener('click', async () => {
     const markdownContent = editor.getValue();
     const filename = document.getElementById('filename').value.trim() || 'document.md';
     
     try {
-        const response = await fetch('/api/file', {
+        const response = await fetch(`${window.CONFIG.API_URL}/api/file`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -152,7 +204,7 @@ document.getElementById('save-btn').addEventListener('click', async () => {
 // Load file list
 async function loadFileList() {
     try {
-        const response = await fetch('/api/files');
+        const response = await fetch(`${window.CONFIG.API_URL}/api/files`);
         const files = await response.json();
         
         const fileList = document.getElementById('file-list');
@@ -173,7 +225,7 @@ async function loadFileList() {
 // Load a file
 async function loadFile(filename) {
     try {
-        const response = await fetch(`/api/file?filename=${encodeURIComponent(filename)}`);
+        const response = await fetch(`${window.CONFIG.API_URL}/api/file?filename=${encodeURIComponent(filename)}`);
         const data = await response.json();
         
         if (data.content) {
@@ -192,10 +244,10 @@ async function loadFile(filename) {
 loadFileList();
 
 // Refresh file list button
-document.getElementById('refresh-btn').addEventListener('click', loadFileList);
+// No refresh button in current HTML
 
 // New file button
-document.getElementById('new-btn').addEventListener('click', () => {
+document.getElementById('new-file-button').addEventListener('click', () => {
     editor.setValue('');
     document.getElementById('filename').value = '';
 });

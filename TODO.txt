@@ -121,3 +121,6 @@ update another projects with the same port issue with makefile
 after loaded web project I got an issue with No markdown files found
 but i started normal command $ make web PORT=8080
 andgot no files in structure, with empty editor and preivew
+
+
+user variables from .env instead of path, port, hostname such: http://localhost:8080

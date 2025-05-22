@@ -2,15 +2,15 @@
 
 // Git History Modal
 const gitHistoryModal = document.getElementById('git-history-modal');
-const gitHistoryBtn = document.getElementById('git-history-btn');
-const gitHistoryClose = gitHistoryModal.querySelector('.close');
+const gitHistoryBtn = document.getElementById('git-history-button');
+const gitHistoryClose = gitHistoryModal ? gitHistoryModal.querySelector('.close') : null;
 const gitCommitsContainer = document.getElementById('git-commits');
 const gitVersionComparisonContainer = document.getElementById('git-version-comparison');
 
 // Publish Modal
 const publishModal = document.getElementById('publish-modal');
-const publishBtn = document.getElementById('publish-btn');
-const publishClose = publishModal.querySelector('.close');
+const publishBtn = document.getElementById('git-publish-button');
+const publishClose = publishModal ? publishModal.querySelector('.close') : null;
 const providerSelect = document.getElementById('provider');
 const publishRepoBtn = document.getElementById('publish-repo-btn');
 const publishResultContainer = document.getElementById('publish-result');
@@ -20,42 +20,49 @@ let currentCommitHash = null;
 let originalContent = null;
 
 // Show Git History Modal
-gitHistoryBtn.addEventListener('click', async () => {
-    // Get the current filename
-    const filename = document.getElementById('filename').value.trim() || 'document.md';
-    
-    try {
-        // Show the modal
-        gitHistoryModal.classList.remove('hidden');
-        gitHistoryModal.classList.add('show');
+if (gitHistoryBtn) {
+    gitHistoryBtn.addEventListener('click', async () => {
+        // Get the current filename
+        const filename = document.getElementById('filename').value.trim() || 'document.md';
         
-        // Load the commit history
-        await loadCommitHistory(filename);
-    } catch (error) {
-        console.error('Error loading Git history:', error);
-        gitCommitsContainer.innerHTML = `<div class="error">Error loading Git history: ${error.message}</div>`;
-    }
-});
+        try {
+            // Show the modal
+            gitHistoryModal.classList.remove('hidden');
+            gitHistoryModal.classList.add('show');
+            
+            // Load the commit history
+            await loadCommitHistory(filename);
+        } catch (error) {
+            console.error('Error loading Git history:', error);
+            gitCommitsContainer.innerHTML = `<div class="error">Error loading Git history: ${error.message}</div>`;
+        }
+    });
+}
 
 // Close Git History Modal
-gitHistoryClose.addEventListener('click', () => {
-    gitHistoryModal.classList.remove('show');
-    gitHistoryModal.classList.add('hidden');
-});
+if (gitHistoryClose) {
+    gitHistoryClose.addEventListener('click', () => {
+        gitHistoryModal.classList.remove('show');
+        gitHistoryModal.classList.add('hidden');
+    });
+}
 
 // Show Publish Modal
-publishBtn.addEventListener('click', () => {
-    // Show the modal
-    publishModal.classList.remove('hidden');
-    publishModal.classList.add('show');
-    
-    // Reset the form
-    publishResultContainer.innerHTML = '';
-    publishResultContainer.className = 'publish-result';
-});
+if (publishBtn) {
+    publishBtn.addEventListener('click', () => {
+        // Show the modal
+        publishModal.classList.remove('hidden');
+        publishModal.classList.add('show');
+        
+        // Reset the form
+        publishResultContainer.innerHTML = '';
+        publishResultContainer.className = 'publish-result';
+    });
+}
 
 // Close Publish Modal
-publishClose.addEventListener('click', () => {
+if (publishClose) {
+    publishClose.addEventListener('click', () => {
     publishModal.classList.remove('show');
     publishModal.classList.add('hidden');
 });
@@ -349,3 +356,4 @@ window.addEventListener('click', (event) => {
         publishModal.classList.add('hidden');
     }
 });
+}

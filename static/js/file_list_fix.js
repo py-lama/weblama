@@ -15,51 +15,52 @@ async function loadFileListDirect() {
         }
         
         // Fetch the file list from the API
-        const response = await fetch('/api/files');
-        const data = await response.json();
-        
-        console.log('API response:', data);
-        
-        // Check if we got a successful response
-        if (data.status === 'success' && Array.isArray(data.files)) {
-            // Store the files globally
-            window.markdownFiles = data.files;
+        console.log('Fetching files from:', `${window.CONFIG.API_URL}/api/files`);
+            const response = await fetch(`${window.CONFIG.API_URL}/api/files`);
+            console.log('Response status:', response.status);
+            const data = await response.json();
+            console.log('Response data:', data);
             
-            // Clear the loading message
-            fileListElement.innerHTML = '';
+            // Check if we got a successful response
+            if (data.status === 'success' && Array.isArray(data.files)) {
+                // Store the files globally
+                window.markdownFiles = data.files;
             
-            // Check if we have any files
-            if (data.files.length === 0) {
-                fileListElement.innerHTML = '<div class="no-files">No markdown files found</div>';
-                return;
-            }
-            
-            // Create a file item for each file
-            data.files.forEach(file => {
-                const fileItem = document.createElement('div');
-                fileItem.className = 'file-item';
-                fileItem.dataset.path = file.path;
+                // Clear the loading message
+                fileListElement.innerHTML = '';
                 
-                // Add active class if this is the current file
-                if (window.currentFile && window.currentFile === file.path) {
-                    fileItem.classList.add('active');
+                // Check if we have any files
+                if (data.files.length === 0) {
+                    fileListElement.innerHTML = '<div class="no-files">No markdown files found</div>';
+                    return;
                 }
                 
-                fileItem.innerHTML = `
-                    <span class="file-icon">📄</span>
-                    <div class="file-info">
-                        <span class="file-name">${file.name}</span>
-                        <span class="file-path">${file.path}</span>
-                    </div>
-                `;
+                // Create a file item for each file
+                data.files.forEach(file => {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item';
+                    fileItem.dataset.path = file.path;
                 
-                // Add click event to open the file
-                fileItem.addEventListener('click', () => {
-                    console.log('Clicked file:', file.path);
-                    openFileDirect(file.path);
-                });
-                
-                fileListElement.appendChild(fileItem);
+                    // Add active class if this is the current file
+                    if (window.currentFile && window.currentFile === file.path) {
+                        fileItem.classList.add('active');
+                    }
+                    
+                    fileItem.innerHTML = `
+                        <span class="file-icon">📄</span>
+                        <div class="file-info">
+                            <span class="file-name">${file.name}</span>
+                            <span class="file-path">${file.path}</span>
+                        </div>
+                    `;
+                    
+                    // Add click event to open the file
+                    fileItem.addEventListener('click', () => {
+                        console.log('Clicked file:', file.path);
+                        openFileDirect(file.path);
+                    });
+                    
+                    fileListElement.appendChild(fileItem);
             });
             
             console.log('File list loaded successfully');
@@ -68,10 +69,10 @@ async function loadFileListDirect() {
             if (data.files.length > 0 && !window.currentFile) {
                 openFileDirect(data.files[0].path);
             }
-        } else {
-            console.error('Failed to load files:', data.error || 'Unknown error');
-            fileListElement.innerHTML = '<div class="error">Failed to load files</div>';
-        }
+            } else {
+                console.error('Failed to load files:', data.error || 'Unknown error');
+                fileListElement.innerHTML = '<div class="error">Failed to load files</div>';
+            }
     } catch (error) {
         console.error('Error loading files:', error);
         document.getElementById('markdown-files').innerHTML = 
@@ -87,7 +88,7 @@ async function openFileDirect(filePath) {
         // Fetch the file content from the API
         // Extract just the filename from the path
         const filename = filePath.split('/').pop();
-        const response = await fetch(`/api/file?filename=${encodeURIComponent(filename)}`);
+        const response = await fetch(`${window.CONFIG.API_URL}/api/file?filename=${encodeURIComponent(filename)}`);
         const data = await response.json();
         
         console.log('File content response:', data);
@@ -152,8 +153,17 @@ async function openFileDirect(filePath) {
 
 // Load the file list when the page is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM loaded, loading file list...');
-    loadFileListDirect();
+    console.log('DOM loaded, waiting for configuration to load...');
+    
+    // Wait for configuration to load before making API requests
+    // Check every 100ms if the configuration has been loaded
+    const configCheckInterval = setInterval(() => {
+        if (window.CONFIG && window.CONFIG.API_URL) {
+            clearInterval(configCheckInterval);
+            console.log('Configuration loaded, API URL:', window.CONFIG.API_URL);
+            loadFileListDirect();
+        }
+    }, 100);
     
     // Also add event listener for the new file button
     const newFileButton = document.getElementById('new-file-button');
@@ -165,7 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const finalFileName = fileName.endsWith('.md') ? fileName : `${fileName}.md`;
                 
                 // Create the new file
-                fetch('/api/files', {
+                fetch(`${window.CONFIG.API_URL}/api/files`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

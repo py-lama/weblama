@@ -94,6 +94,7 @@
         </div>
     </div>
 
+    <script src="js/config.js"></script>
     <script>
         // Function to load the file list
         async function loadFileList() {
@@ -101,7 +102,7 @@
             fileListElement.innerHTML = '<div class="loading">Loading files...</div>';
             
             try {
-                const response = await fetch('/api/files');
+                const response = await fetch(`${window.CONFIG.API_URL}/api/files`);
                 const data = await response.json();
                 
                 if (data.status === 'success' && Array.isArray(data.files)) {

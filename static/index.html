@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WebLama - Markdown Editor with Code Execution</title>
     <!-- Custom styles -->
-    <link rel="stylesheet" href="/static/css/style.css">
-    <link rel="stylesheet" href="/static/css/debug_console.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/debug_console.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.2/lib/codemirror.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.2/theme/monokai.min.css">
@@ -23,6 +23,8 @@
         // For example, in Docker it would be set to http://apilama:8080
         console.log('API URL:', window.API_URL);
     </script>
+    <!-- Configuration Script -->
+    <script src="js/config.js"></script>
     <!-- Custom styles -->
 </head>
 <body>
@@ -42,7 +44,7 @@
             </div>
             <div class="file-list" id="markdown-files">
                 <!-- Files will be loaded here dynamically -->
-                <div class="loading-files">Loading files... <a href="/static/file_explorer.html" target="_blank">(View in standalone explorer)</a></div>
+                <div class="loading-files">Loading files... <a href="file_explorer.html" target="_blank">(View in standalone explorer)</a></div>
             </div>
         </div>
         
@@ -165,10 +167,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/highlight.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/languages/python.min.js"></script>
     <!-- Custom scripts -->
-    <script src="/static/js/editor.js"></script>
-    <script src="/static/js/git_integration.js"></script>
-    <script src="/static/js/file_explorer.js"></script>
-    <script src="/static/js/file_list_fix.js"></script>
-    <script src="/static/js/debug_console.js"></script>
+    <script src="js/editor.js"></script>
+    <script src="js/git_integration.js"></script>
+    <script src="js/file_explorer.js"></script>
+    <script src="js/file_list_fix.js"></script>
+    <script src="js/debug_console.js"></script>
 </body>
 </html>
