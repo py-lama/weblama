@@ -84,4 +84,21 @@ test-docker: setup
 	@echo "Running tests with Docker services..."
 	@./run_tests.sh
 
+# Docker testing targets
+docker-build:
+	@echo "Building Docker test images..."
+	@./run_docker_tests.sh --build
+
+docker-test: docker-build
+	@echo "Running tests in Docker..."
+	@./run_docker_tests.sh --run-tests
+
+docker-dev: docker-build
+	@echo "Starting development server in Docker..."
+	@./run_docker_tests.sh --dev
+
+docker-clean:
+	@echo "Cleaning Docker test environment..."
+	@./run_docker_tests.sh --clean
+
 # This is now a frontend-only component that communicates with APILama
