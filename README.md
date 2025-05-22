@@ -2,6 +2,19 @@
 
 A simple web application running in a Docker container using Node.js and Express.
 
+## Installation
+
+```bash
+# Create a virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install the package in development mode
+pip install -e .  # This is important! Always install in development mode before starting
+```
+
+> **IMPORTANT**: Always run `pip install -e .` before starting the project to ensure all dependencies are properly installed and the package is available in development mode.
+
 ## Building and Running the Docker Container
 
 To build the Docker image, run the following command from the project directory:
