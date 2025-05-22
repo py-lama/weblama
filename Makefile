@@ -1,6 +1,6 @@
 # Makefile for WebLama Frontend
 
-.PHONY: help setup web dev build lint test
+.PHONY: help setup web dev build lint test docker-test docker-build docker-dev docker-clean
 
 default: help
 
@@ -19,6 +19,10 @@ help:
 	@echo "  test-integration Run integration tests"
 	@echo "  test-e2e       Run end-to-end tests"
 	@echo "  test-docker    Run tests with Docker services"
+	@echo "  docker-build   Build Docker test images"
+	@echo "  docker-test    Run tests in Docker"
+	@echo "  docker-dev     Start development server in Docker"
+	@echo "  docker-clean   Clean Docker test environment"
 
 # Default values
 PORT ?= 8084
