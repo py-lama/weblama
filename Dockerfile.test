@@ -2,7 +2,7 @@
 
 FROM node:16-slim
 
-LABEL maintainer="PyLama Team <info@example.com>"
+LABEL maintainer="Tom Sapletta <info@example.com>"
 LABEL version="1.0.0"
 LABEL description="Testing environment for WebLama frontend component"
 
