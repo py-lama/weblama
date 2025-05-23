@@ -1,6 +1,6 @@
 # WebLama
 
-A simple web application running in a Docker container using Node.js and Express.
+A web frontend for the PyLama ecosystem that provides a user interface for interacting with the various PyLama services. WebLama integrates with LogLama as the primary service for centralized logging, environment management, and service orchestration.
 
 ## Installation
 
@@ -37,3 +37,38 @@ Once the container is running, you can access the application at [http://localho
 - `package.json` - Node.js dependencies and project configuration
 - `public/index.html` - The HTML file served by the application
 - `Dockerfile` - Instructions for building the Docker image
+
+## LogLama Integration
+
+WebLama integrates with LogLama as the primary service in the PyLama ecosystem. This integration provides:
+
+- **Centralized Environment Management**: Environment variables are loaded from the central `.env` file in the `pylama` directory
+- **Dependency Management**: Dependencies are validated and installed by LogLama
+- **Service Orchestration**: WebLama is started after all backend services by LogLama
+- **Centralized Logging**: All WebLama operations are logged to the central LogLama system
+- **Structured Logging**: Logs include component context for better filtering and analysis
+- **Health Monitoring**: LogLama monitors WebLama service health and availability
+
+## Using the Makefile
+
+WebLama includes a Makefile to simplify common development tasks:
+
+```bash
+# Set up the project (creates a virtual environment and installs dependencies)
+make setup
+
+# Run the web server (default port 8081)
+make web
+
+# Run the web server on a custom port
+make web PORT=8080
+
+# Run tests
+make test
+
+# Clean up project (remove __pycache__, etc.)
+make clean
+
+# Show all available commands
+make help
+```

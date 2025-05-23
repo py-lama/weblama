@@ -1,3 +1,5 @@
+.db
+.pid
 node_modules
 package-lock.json
 # PyCharm helpers
