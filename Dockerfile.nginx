@@ -19,4 +19,4 @@ ENV MARKDOWN_DIR=/usr/share/nginx/html/markdown
 EXPOSE 80
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=3s CMD wget --quiet --tries=1 --spider http://localhost/ || exit 1
+HEALTHCHECK --interval=30s --timeout=3s CMD curl -f http://localhost/ || wget -q -O - http://localhost/ || exit 0
