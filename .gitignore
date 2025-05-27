@@ -1,5 +1,9 @@
-.db
+logs
+.log
 .pid
+.db
+.sqlite
+.env
 node_modules
 package-lock.json
 # PyCharm helpers
