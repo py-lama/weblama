@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PyLama Frontend Guide</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .feature-box {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background-color: #f9f9f9;
+        }
+        .screenshot {
+            max-width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin: 15px 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .step {
+            background-color: #f0f8ff;
+            padding: 15px;
+            border-left: 4px solid #007bff;
+            margin-bottom: 15px;
+        }
+        .integration-point {
+            background-color: #f0fff0;
+            padding: 15px;
+            border-left: 4px solid #28a745;
+            margin-bottom: 15px;
+        }
+        code {
+            background-color: #f1f1f1;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        .nav-pills .nav-link.active {
+            background-color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <h1 class="text-center mb-4">PyLama Frontend Guide</h1>
+        <p class="lead text-center">A comprehensive guide to using the WebLama frontend with the PyLama ecosystem</p>
+
+        <ul class="nav nav-pills mb-4 justify-content-center" id="myTab" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="overview-tab" data-toggle="pill" href="#overview" role="tab">Overview</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="editor-tab" data-toggle="pill" href="#editor" role="tab">Code Editor</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="markdown-tab" data-toggle="pill" href="#markdown" role="tab">Markdown</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="integration-tab" data-toggle="pill" href="#integration" role="tab">Service Integration</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="grafana-tab" data-toggle="pill" href="#grafana" role="tab">LogLama-Grafana</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="troubleshooting-tab" data-toggle="pill" href="#troubleshooting" role="tab">Troubleshooting</a>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="myTabContent">
+            <!-- Overview Tab -->
+            <div class="tab-pane fade show active" id="overview" role="tabpanel">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="feature-box">
+                            <h2>PyLama Ecosystem Architecture</h2>
+                            <p>The PyLama ecosystem consists of multiple interconnected services, with WebLama serving as the frontend interface.</p>
+                            <div class="text-center">
+                                <pre><code>
+                   +------------+
+                   |   Ollama   |
+                   |   (LLM)    |
+                   +------------+
+                        ^  
+                        |  
+                        v  
+                  +---------------+
+                  |   LogLama     |
+                  | (Environment) |
+                  +---------------+
+                     ^    ^    ^  
+                     |    |    |  
+         +-----------+    |    +-----------+
+         |                |                |
+         v                v                v
++------------+     +------------+     +---------------+     +------------+
+|   PyBox    |     |   PyLLM    |<--->|   PyLama      |<--->| SheLLama   |
+|  (Sandbox) |<--->|   (LLM)    |     | (Orchestrator)|     |  (Shell)   |
++------------+     +------------+     +---------------+     +------------+
+      ^                  ^                  ^                  ^  
+      |                  |                  |                  |  
+      v                  v                  v                  v  
++-----------------------------------------------------------------------+
+|                            APILama                                    |
+|                          (API Gateway)                                |
++-----------------------------------------------------------------------+
+                                ^  
+                                |  
+                                v  
++-----------------------------------------------------------------------+
+|                            WebLama                                    |
+|                           (Frontend)                                  |
++-----------------------------------------------------------------------+
+                                ^  
+                                |  
+                                v  
++-----------------------------------------------------------------------+
+|                            Browser                                    |
++-----------------------------------------------------------------------+
+                                </code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="feature-box">
+                            <h3>Getting Started</h3>
+                            <div class="step">
+                                <h4>Step 1: Start the PyLama Ecosystem</h4>
+                                <p>Using Docker (recommended):</p>
+                                <code>docker-compose up -d</code>
+                                <p>Or with LogLama-Grafana integration:</p>
+                                <code>docker-compose -f docker-compose.logging.yml up -d</code>
+                            </div>
+                            <div class="step">
+                                <h4>Step 2: Access WebLama</h4>
+                                <p>Open your browser and navigate to:</p>
+                                <code>http://localhost:9081</code>
+                                <p>Or use the CLI:</p>
+                                <code>python -m pylama.cli open</code>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="feature-box">
+                            <h3>Key Services</h3>
+                            <ul class="list-group">
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    WebLama (Frontend)
+                                    <span class="badge badge-primary badge-pill">Port 9081</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    APILama (Gateway)
+                                    <span class="badge badge-primary badge-pill">Port 9080</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    LogLama (Logging)
+                                    <span class="badge badge-primary badge-pill">Port 6001</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    PyLama (Orchestration)
+                                    <span class="badge badge-primary badge-pill">Port 9003</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Grafana (Visualization)
+                                    <span class="badge badge-primary badge-pill">Port 3000</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Code Editor Tab -->
+            <div class="tab-pane fade" id="editor" role="tabpanel">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="feature-box">
+                            <h2>WebLama Code Editor</h2>
+                            <p>The WebLama interface provides a powerful code editor with syntax highlighting, file management, and execution capabilities.</p>
+                            
+                            <h4>Key Features:</h4>
+                            <ul>
+                                <li><strong>Syntax Highlighting</strong> for multiple programming languages</li>
+                                <li><strong>File Explorer</strong> for navigating and managing files</li>
+                                <li><strong>Code Execution</strong> directly from the editor</li>
+                                <li><strong>Results Display</strong> showing execution output</li>
+                            </ul>
+                            
+                            <div class="step">
+                                <h4>Creating and Editing Files</h4>
+                                <ol>
+                                    <li>Use the file explorer on the left to navigate directories</li>
+                                    <li>Click the "New File" button to create a new file</li>
+                                    <li>Enter file name with appropriate extension (e.g., .py, .md)</li>
+                                    <li>Edit the file in the main editor pane</li>
+                                    <li>Click "Save" to save your changes</li>
+                                </ol>
+                            </div>
+                            
+                            <div class="step">
+                                <h4>Executing Code</h4>
+                                <ol>
+                                    <li>Write or open a Python file in the editor</li>
+                                    <li>Click the "Run" button to execute the code</li>
+                                    <li>View the execution results in the output panel below the editor</li>
+                                    <li>For advanced options, use the dropdown menu next to the Run button</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Markdown Tab -->
+            <div class="tab-pane fade" id="markdown" role="tabpanel">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="feature-box">
+                            <h2>Markdown Support</h2>
+                            <p>WebLama provides rich markdown rendering capabilities, including support for code blocks and Mermaid diagrams.</p>
+                            
+                            <div class="step">
+                                <h4>Creating Markdown Files</h4>
+                                <ol>
+                                    <li>Create a new file with the .md extension</li>
+                                    <li>Write markdown content in the editor</li>
+                                    <li>Click "Preview" to see the rendered markdown</li>
+                                </ol>
+                            </div>
+                            
+                            <div class="step">
+                                <h4>Mermaid Diagram Support</h4>
+                                <p>Create diagrams using Mermaid syntax:</p>
+                                <pre><code>```mermaid
+graph TD
+    A[WebLama] --&gt; B[APILama]
+    B --&gt; C[PyBox]
+    B --&gt; D[PyLLM]
+    B --&gt; E[SheLLama]
+    F[LogLama] --&gt; A
+    F --&gt; B
+    F --&gt; C
+    F --&gt; D
+    F --&gt; E
+```</code></pre>
+                                <p>This will render as an interactive diagram in the markdown preview.</p>
+                            </div>
+                            
+                            <div class="step">
+                                <h4>Code Blocks with Syntax Highlighting</h4>
+                                <p>Use triple backticks with language identifier for syntax highlighting:</p>
+                                <pre><code>```python
+def hello_world():
+    print("Hello, PyLama!")
+    
+hello_world()
+```</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Service Integration Tab -->
+            <div class="tab-pane fade" id="integration" role="tabpanel">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="feature-box">
+                            <h2>Integration with PyLama Services</h2>
+                            <p>WebLama seamlessly integrates with all backend services in the PyLama ecosystem.</p>
+                            
+                            <div class="integration-point">
+                                <h4>PyBox Integration</h4>
+                                <p>Execute Python code in a sandboxed environment:</p>
+                                <ol>
+                                    <li>Create or open a Python file</li>
+                                    <li>Click "Run" to execute the code using PyBox</li>
+                                    <li>View execution results, including stdout, stderr, and return values</li>
+                                    <li>Access execution history and compare results</li>
+                                </ol>
+                            </div>
+                            
+                            <div class="integration-point">
+                                <h4>PyLLM Integration</h4>
+                                <p>Interact with LLM models for code generation and enhancement:</p>
+                                <ol>
+                                    <li>Select code in the editor</li>
+                                    <li>Click "Enhance with LLM" or use the context menu</li>
+                                    <li>Choose from available operations (explain, optimize, document)</li>
+                                    <li>View and apply LLM-generated suggestions</li>
+                                </ol>
+                            </div>
+                            
+                            <div class="integration-point">
+                                <h4>SheLLama Integration</h4>
+                                <p>Perform file system operations and execute shell commands:</p>
+                                <ol>
+                                    <li>Use the file explorer to navigate, create, rename, and delete files</li>
+                                    <li>Access the terminal panel to execute shell commands</li>
+                                    <li>View command output directly in the interface</li>
+                                    <li>Manage Git repositories through the Git panel</li>
+                                </ol>
+                            </div>
+                            
+                            <div class="integration-point">
+                                <h4>LogLama Integration</h4>
+                                <p>Access and analyze logs from all services:</p>
+                                <ol>
+                                    <li>Click the "Logs" tab to view centralized logs</li>
+                                    <li>Filter logs by service, level, or custom criteria</li>
+                                    <li>Search for specific log entries</li>
+                                    <li>Export logs for further analysis</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LogLama-Grafana Tab -->
+            <div class="tab-pane fade" id="grafana" role="tabpanel">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="feature-box">
+                            <h2>LogLama-Grafana Integration</h2>
+                            <p>The PyLama ecosystem includes integration with Grafana for advanced log visualization and analysis.</p>
+                            
+                            <div class="step">
+                                <h4>Accessing Grafana</h4>
+                                <ol>
+                                    <li>Start the PyLama ecosystem with Grafana integration:</li>
+                                    <code>docker-compose -f docker-compose.logging.yml up -d</code>
+                                    <li>Open Grafana in your browser:</li>
+                                    <code>http://localhost:3000</code>
+                                    <li>Log in with default credentials (admin/admin)</li>
+                                </ol>
+                            </div>
+                            
+                            <div class="step">
+                                <h4>Available Dashboards</h4>
+                                <ul>
+                                    <li><strong>PyLama Overview</strong>: Comprehensive view of all logs across services</li>
+                                    <li><strong>LogLama Metrics</strong>: Performance metrics and log statistics</li>
+                                    <li><strong>Service Health</strong>: Real-time monitoring of service status</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="step">
+                                <h4>Generating Sample Logs</h4>
+                                <p>Generate diverse logs for visualization:</p>
+                                <code>docker exec loglama python -m loglama.examples.loglama-grafana.generate_diverse_logs_fixed</code>
+                                <p>Or using the Makefile:</p>
+                                <code>cd loglama && make generate-grafana-logs</code>
+                            </div>
+                            
+                            <div class="step">
+                                <h4>Continuous Web Log Monitoring</h4>
+                                <p>Start web log monitoring:</p>
+                                <code>cd loglama && make run-grafana-web-monitor</code>
+                                <p>Stop web log monitoring:</p>
+                                <code>cd loglama && make stop-grafana-web-monitor</code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Troubleshooting Tab -->
+            <div class="tab-pane fade" id="troubleshooting" role="tabpanel">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="feature-box">
+                            <h2>Troubleshooting Frontend-Backend Integration</h2>
+                            <p>Common issues and solutions when working with the PyLama ecosystem.</p>
+                            
+                            <div class="step">
+                                <h4>Checking Service Status</h4>
+                                <p>Using Docker:</p>
+                                <code>docker-compose ps</code>
+                                <p>Using the PyLama CLI:</p>
+                                <code>python -m pylama.cli status</code>
+                                <p>Using the convenience script:</p>
+                                <code>./start-pylama.sh status</code>
+                            </div>
+                            
+                            <div class="step">
+                                <h4>Checking Logs for Errors</h4>
+                                <p>View logs for WebLama:</p>
+                                <code>docker-compose logs weblama</code>
+                                <p>View logs for APILama (the gateway):</p>
+                                <code>docker-compose logs apilama</code>
+                                <p>View logs for all services:</p>
+                                <code>docker-compose logs</code>
+                            </div>
+                            
+                            <div class="step">
+                                <h4>Running Debug Utilities</h4>
+                                <p>Run all debug utilities:</p>
+                                <code>cd loglama && make run-debug</code>
+                                <p>Run specific debug tests:</p>
+                                <code>cd loglama && make run-debug-context</code><br>
+                                <code>cd loglama && make run-debug-sqlite</code><br>
+                                <code>cd loglama && make run-debug-file</code>
+                            </div>
+                            
+                            <div class="step">
+                                <h4>Common Issues and Solutions</h4>
+                                <ul>
+                                    <li><strong>WebLama can't connect to backend services</strong>: Check that APILama is running and accessible</li>
+                                    <li><strong>Code execution fails</strong>: Verify that PyBox is running and properly configured</li>
+                                    <li><strong>LLM features not working</strong>: Ensure Ollama and PyLLM services are running</li>
+                                    <li><strong>File operations failing</strong>: Check SheLLama service status and logs</li>
+                                    <li><strong>Logs not appearing in Grafana</strong>: Verify LogLama-Grafana integration is properly set up</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-light py-3 mt-5">
+        <div class="container text-center">
+            <p>PyLama Ecosystem &copy; 2025 | <a href="https://github.com/yourusername/py-lama">GitHub Repository</a></p>
+        </div>
+    </footer>
+
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(function () {
+            $('#myTab a').on('click', function (e) {
+                e.preventDefault();
+                $(this).tab('show');
+            });
+        });
+    </script>
+</body>
+</html>
