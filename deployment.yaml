@@ -1,8 +1,8 @@
 services:
-  pybox:
-    name: PyBox
+  bexy:
+    name: BEXY
     description: Python code execution sandbox
-    api_url: http://pybox:8000
+    api_url: http://bexy:8000
     endpoints:
       - path: /execute
         method: POST
@@ -55,6 +55,6 @@ services:
     description: Web interface and API gateway
     api_url: http://weblama:5000
     depends_on:
-      - pybox
+      - bexy
       - pyllm
       - pylama

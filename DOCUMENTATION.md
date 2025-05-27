@@ -109,7 +109,7 @@ You can also manually execute code blocks by clicking the "Run" button next to e
 
 ### Execution Environment
 
-Code is executed in a sandboxed environment using PyBox. This provides isolation and security. The execution environment includes:
+Code is executed in a sandboxed environment using Bexy. This provides isolation and security. The execution environment includes:
 
 - Standard Python libraries
 - Common data science libraries (if installed)
@@ -230,7 +230,7 @@ git config --global user.email "your.email@example.com"
 #### Python Code Execution Fails
 
 - **Issue**: Python code blocks fail to execute
-- **Solution**: Check that PyBox is properly installed and configured
+- **Solution**: Check that Bexy is properly installed and configured
 
 #### Git Integration Issues
 

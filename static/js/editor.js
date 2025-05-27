@@ -163,8 +163,8 @@ async function executeAllCodeBlocks(markdownContent) {
             return;
         }
         
-        // Use the pybox/execute endpoint for code execution
-        const response = await fetch(`${window.CONFIG.API_URL}/api/pybox/execute`, {
+        // Use the bexy/execute endpoint for code execution
+        const response = await fetch(`${window.CONFIG.API_URL}/api/bexy/execute`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

@@ -19,14 +19,14 @@ graph TD
 sequenceDiagram
     participant User
     participant WebLama
-    participant PyLama
-    participant PyBox
+    participant BexyLama
+    participant BEXY
     
     User->>WebLama: Edit markdown
-    WebLama->>PyLama: Generate code
-    PyLama->>PyBox: Execute code
-    PyBox-->>PyLama: Return results
-    PyLama-->>WebLama: Return formatted output
+    WebLama->>BexyLama: Generate code
+    BexyLama->>BEXY: Execute code
+    BEXY-->>BexyLama: Return results
+    BexyLama-->>WebLama: Return formatted output
     WebLama-->>User: Display results
 ```
 
@@ -39,16 +39,16 @@ classDiagram
         +run()
         +edit_file()
     }
-    class PyLama {
+    class BexyLama {
         +generate_code()
         +fix_code()
     }
-    class PyBox {
+    class BEXY {
         +execute_code()
         +sandbox_run()
     }
-    WebLama --> PyLama
-    WebLama --> PyBox
+    WebLama --> BexyLama
+    WebLama --> BEXY
 ```
 
 ## Try Your Own

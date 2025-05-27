@@ -1,6 +1,6 @@
 bazując na strukturze projektu webllama i zaimlpementowanych w tym projekcie dodatkowych funkcjonalności, sparwdz, czy ktoreś z nich nie były by możłiwe do wdrożenia bezpośrednio  w projektach:
 ../pylama
-../pybox
+../bexy
 ../pyllm
 
 być może są jakieś kwestie związane w zfunkcjonalnośćią, ktora wychodzi poza projekt webllama
@@ -13,9 +13,9 @@ w ten posob weblama może używac docker compose w którym będą uruchamiane ta
 
 Potential Improvements for Integration
 1. REST API Implementation for Core Libraries
-I notice that WebLama currently uses direct Python imports to interact with the core libraries. Instead, each core library (pylama, pybox, pyllm) could expose REST APIs:
+I notice that WebLama currently uses direct Python imports to interact with the core libraries. Instead, each core library (pylama, bexy, pyllm) could expose REST APIs:
 
-PyBox: Could implement a REST API for code execution and sandbox management
+BEXY: Could implement a REST API for code execution and sandbox management
 PyLLM: Could expose its LLM functionality via API endpoints
 PyLama: Could provide API endpoints for Ollama management
 This would allow WebLama to become a lightweight frontend that communicates with these services via HTTP rather than direct Python imports.
@@ -28,23 +28,23 @@ Allow independent scaling of components
 Improve security by isolating the code execution environment
 A Docker Compose setup could include:
 
-Container for PyBox (code execution service)
+Container for BEXY (code execution service)
 Container for PyLLM (LLM service)
 Container for PyLama (Ollama management)
 Container for WebLama (frontend/API gateway)
 3. Reducing Code Duplication
 I noticed several areas of code duplication:
 
-Sandbox Implementation: WebLama has its own PythonSandbox class in sandbox.py that duplicates functionality from PyBox
+Sandbox Implementation: WebLama has its own PythonSandbox class in sandbox.py that duplicates functionality from BEXY
 LLM Integration: WebLama implements its own OllamaRunner that duplicates functionality from PyLama
-Code Execution: The code execution logic in WebLama could be moved to PyBox
+Code Execution: The code execution logic in WebLama could be moved to BEXY
 4. Specific Recommendations
-For PyBox:
-Implement a REST API server in PyBox that exposes endpoints for:
+For BEXY:
+Implement a REST API server in BEXY that exposes endpoints for:
 Code execution
 Dependency management
 Docker sandbox operations
-This would allow WebLama to call PyBox via HTTP instead of direct imports
+This would allow WebLama to call BEXY via HTTP instead of direct imports
 For PyLLM:
 Create a REST API server that exposes:
 Model management
@@ -79,9 +79,9 @@ This architecture would transform the current tightly coupled system into a more
 
 
 split up weblama project to static frontend side js,css,html, .. and backend python side with ../apilama folder where should be moved all python/backend code which will
-do communication between pylama, pybox, pyllm, shellama and weblama, which will stay just web frontend side as web interface with js stack for npm
+do communication between pylama, bexy, pyllm, shellama and weblama, which will stay just web frontend side as web interface with js stack for npm
 weblama will be simple npm package as api gateway between js frontend and python backend
-apilama will stay just python backend package which will do communication between pylama, pybox, pyllm, shellama and weblama
+apilama will stay just python backend package which will do communication between pylama, bexy, pyllm, shellama and weblama
 shellama will be new python package to shell operation with support for filesystem, what exacly do now weblama
 use standarized structure for py packages with makefile, docs, and tests
 
@@ -90,7 +90,7 @@ pylama will be the center point to handle all projects and run e.g. weblama with
 update makefile and readme and another files to update that structure and context
 
 check if weblama is only frontend app without python files in project, split up weblama project to static frontend side js,css,html, .. and backend python side with ../apilama folder where should be moved all python/backend code which will
-do communication between pylama, pybox, pyllm, shellama and weblama, which will stay just web frontend side as web interface with js stack for npm
+do communication between pylama, bexy, pyllm, shellama and weblama, which will stay just web frontend side as web interface with js stack for npm
 
 
 

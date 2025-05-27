@@ -96,7 +96,7 @@
          |                |                |
          v                v                v
 +------------+     +------------+     +---------------+     +------------+
-|   PyBox    |     |   PyLLM    |<--->|   PyLama      |<--->| SheLLama   |
+|   Bexy    |     |   PyLLM    |<--->|   PyLama      |<--->| SheLLama   |
 |  (Sandbox) |<--->|   (LLM)    |     | (Orchestrator)|     |  (Shell)   |
 +------------+     +------------+     +---------------+     +------------+
       ^                  ^                  ^                  ^  
@@ -239,7 +239,7 @@
                                 <pre><code>```mermaid
 graph TD
     A[WebLama] --&gt; B[APILama]
-    B --&gt; C[PyBox]
+    B --&gt; C[Bexy]
     B --&gt; D[PyLLM]
     B --&gt; E[SheLLama]
     F[LogLama] --&gt; A
@@ -275,11 +275,11 @@ hello_world()
                             <p>WebLama seamlessly integrates with all backend services in the PyLama ecosystem.</p>
                             
                             <div class="integration-point">
-                                <h4>PyBox Integration</h4>
+                                <h4>Bexy Integration</h4>
                                 <p>Execute Python code in a sandboxed environment:</p>
                                 <ol>
                                     <li>Create or open a Python file</li>
-                                    <li>Click "Run" to execute the code using PyBox</li>
+                                    <li>Click "Run" to execute the code using Bexy</li>
                                     <li>View execution results, including stdout, stderr, and return values</li>
                                     <li>Access execution history and compare results</li>
                                 </ol>
@@ -412,7 +412,7 @@ hello_world()
                                 <h4>Common Issues and Solutions</h4>
                                 <ul>
                                     <li><strong>WebLama can't connect to backend services</strong>: Check that APILama is running and accessible</li>
-                                    <li><strong>Code execution fails</strong>: Verify that PyBox is running and properly configured</li>
+                                    <li><strong>Code execution fails</strong>: Verify that Bexy is running and properly configured</li>
                                     <li><strong>LLM features not working</strong>: Ensure Ollama and PyLLM services are running</li>
                                     <li><strong>File operations failing</strong>: Check SheLLama service status and logs</li>
                                     <li><strong>Logs not appearing in Grafana</strong>: Verify LogLama-Grafana integration is properly set up</li>
