@@ -17,10 +17,10 @@ services:
         method: GET
         description: Health check endpoint
   
-  pyllm:
+  getllm:
     name: PyLLM
     description: LLM operations service
-    api_url: http://pyllm:8001
+    api_url: http://getllm:8001
     endpoints:
       - path: /query
         method: POST
@@ -56,5 +56,5 @@ services:
     api_url: http://weblama:5000
     depends_on:
       - bexy
-      - pyllm
+      - getllm
       - pylama
