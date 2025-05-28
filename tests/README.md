@@ -120,7 +120,7 @@ When adding new tests:
 If you see connection errors in your tests, make sure the Docker services are running:
 
 ```bash
-../start-pylama.sh docker up
+../start-devlama.sh docker up
 ```
 
 ### Port Conflicts

@@ -42,7 +42,7 @@ Once the container is running, you can access the application at [http://localho
 
 WebLama integrates with LogLama as the primary service in the PyLama ecosystem. This integration provides:
 
-- **Centralized Environment Management**: Environment variables are loaded from the central `.env` file in the `pylama` directory
+- **Centralized Environment Management**: Environment variables are loaded from the central `.env` file in the `devlama` directory
 - **Dependency Management**: Dependencies are validated and installed by LogLama
 - **Service Orchestration**: WebLama is started after all backend services by LogLama
 - **Centralized Logging**: All WebLama operations are logged to the central LogLama system

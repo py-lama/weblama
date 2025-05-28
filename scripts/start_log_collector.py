@@ -23,8 +23,8 @@ def find_loglama():
     
     # Try to find loglama in the standard location
     current_dir = Path(__file__).parent.absolute()
-    pylama_root = current_dir.parent.parent
-    loglama_path = pylama_root / 'loglama'
+    devlama_root = current_dir.parent.parent
+    loglama_path = devlama_root / 'loglama'
     
     if loglama_path.exists():
         print(f"Found LogLama at {loglama_path}")
@@ -36,7 +36,7 @@ def find_loglama():
             print(f"Found LogLama directory but couldn't import: {e}")
     
     # Try parent directory
-    loglama_path = pylama_root.parent / 'loglama'
+    loglama_path = devlama_root.parent / 'loglama'
     if loglama_path.exists():
         print(f"Found LogLama at {loglama_path}")
         sys.path.insert(0, str(loglama_path))
@@ -46,7 +46,7 @@ def find_loglama():
         except ImportError as e:
             print(f"Found LogLama directory but couldn't import: {e}")
     
-    print(f"Searched for LogLama in:\n- Python path\n- {pylama_root}/loglama\n- {pylama_root.parent}/loglama")
+    print(f"Searched for LogLama in:\n- Python path\n- {devlama_root}/loglama\n- {devlama_root.parent}/loglama")
     return False
 
 

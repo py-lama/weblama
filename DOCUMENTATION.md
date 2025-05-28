@@ -30,7 +30,7 @@ WebLama is a web-based Markdown editor with integrated Python code execution, au
 
 ```bash
 # Clone the repository
-git clone https://github.com/py-lama/pylama.git
+git clone https://github.com/py-lama/devlama.git
 cd py-lama/weblama
 
 # Install the package

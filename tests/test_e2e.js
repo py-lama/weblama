@@ -24,7 +24,7 @@ const skipIfServicesNotRunning = async () => {
   } catch (error) {
     console.warn('APILama service is not running. Skipping E2E tests.');
     console.warn('To run these tests, make sure the Docker services are running:');
-    console.warn('  cd .. && ./start-pylama.sh docker up');
+    console.warn('  cd .. && ./start-devlama.sh docker up');
     return true; // Skip tests
   }
 };

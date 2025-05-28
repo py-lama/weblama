@@ -32,10 +32,10 @@ services:
         method: GET
         description: Health check endpoint
   
-  pylama:
+  devlama:
     name: PyLama
     description: Ollama management service
-    api_url: http://pylama:8002
+    api_url: http://devlama:8002
     endpoints:
       - path: /models
         method: GET
@@ -57,4 +57,4 @@ services:
     depends_on:
       - bexy
       - getllm
-      - pylama
+      - devlama

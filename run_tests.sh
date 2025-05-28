@@ -14,7 +14,7 @@ echo -e "${BOLD}${BLUE}Checking if Docker services are running...${RESET}"
 docker ps | grep -q "py-lama-apilama"
 if [ $? -ne 0 ]; then
   echo -e "${BOLD}${YELLOW}Docker services are not running. Starting them...${RESET}"
-  cd "$(dirname "$0")/.." && ./start-pylama.sh docker up
+  cd "$(dirname "$0")/.." && ./start-devlama.sh docker up
   sleep 5  # Give services time to start
 fi
 
