@@ -1,0 +1,5 @@
+{
+  "status": "success",
+  "message": "WebLama API is healthy",
+  "service": "weblama"
+}
