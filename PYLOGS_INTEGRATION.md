@@ -1,10 +1,10 @@
-# PyLogs Integration in WebLama
+# LogLama Integration in WebLama
 
-This document explains how PyLogs has been integrated into the WebLama component of the PyLama ecosystem.
+This document explains how LogLama has been integrated into the WebLama component of the PyLama ecosystem.
 
 ## Overview
 
-WebLama now includes a comprehensive logging system that leverages PyLogs for advanced logging capabilities. The integration consists of:
+WebLama now includes a comprehensive logging system that leverages LogLama for advanced logging capabilities. The integration consists of:
 
 1. A Python bridge that provides a logging API for the JavaScript frontend
 2. JavaScript utilities for logging from the frontend
@@ -14,12 +14,12 @@ WebLama now includes a comprehensive logging system that leverages PyLogs for ad
 
 ### 1. Python Bridge (`weblama/bridge.py`)
 
-The Python bridge provides an HTTP API that the JavaScript frontend can use to send logs to PyLogs. It:
+The Python bridge provides an HTTP API that the JavaScript frontend can use to send logs to LogLama. It:
 
-- Initializes PyLogs with the configuration from environment variables
+- Initializes LogLama with the configuration from environment variables
 - Exposes an HTTP server on port 8085 (configurable)
 - Accepts log messages via HTTP POST requests
-- Forwards logs to PyLogs with appropriate levels and context
+- Forwards logs to LogLama with appropriate levels and context
 
 ### 2. JavaScript Logger (`static/js/utils/logger.js`)
 
@@ -28,27 +28,27 @@ The JavaScript logger provides a unified logging interface for the WebLama front
 - Automatically initializes from the server configuration
 - Provides methods for different log levels (debug, info, warning, error, critical)
 - Supports context information for structured logging
-- Falls back to console logging if the PyLogs bridge is not available
+- Falls back to console logging if the LogLama bridge is not available
 
 ### 3. Server Integration (`server.js`)
 
 The Node.js server has been updated to:
 
-- Start the PyLogs bridge when the server starts (if enabled)
+- Start the LogLama bridge when the server starts (if enabled)
 - Provide a proxy endpoint for logging from the frontend
-- Include PyLogs configuration in the server configuration API
+- Include LogLama configuration in the server configuration API
 
 ## Configuration
 
-PyLogs integration can be configured through environment variables in the `.env` file:
+LogLama integration can be configured through environment variables in the `.env` file:
 
 ```
-# PyLogs Integration
-WEBLAMA_PYLOGS_ENABLED=true     # Enable or disable the PyLogs bridge
-WEBLAMA_PYLOGS_PORT=8085        # Port for the PyLogs bridge server
-WEBLAMA_PYLOGS_HOST=127.0.0.1   # Host for the PyLogs bridge server
+# LogLama Integration
+WEBLAMA_LOGLAMA_ENABLED=true     # Enable or disable the LogLama bridge
+WEBLAMA_LOGLAMA_PORT=8085        # Port for the LogLama bridge server
+WEBLAMA_LOGLAMA_HOST=127.0.0.1   # Host for the LogLama bridge server
 
-# PyLogs configuration
+# LogLama configuration
 WEBLAMA_LOG_LEVEL=INFO          # Logging level
 WEBLAMA_LOG_DIR=./logs          # Directory for log files
 WEBLAMA_DB_LOGGING=true         # Enable database logging
@@ -92,9 +92,9 @@ WebLamaLogger.setContext({
 
 ## Troubleshooting
 
-If you encounter issues with the PyLogs integration:
+If you encounter issues with the LogLama integration:
 
-1. Check if the PyLogs bridge is running (look for messages in the server console)
+1. Check if the LogLama bridge is running (look for messages in the server console)
 2. Verify that the configuration in `.env` is correct
 3. Check the logs directory for log files
 4. Try disabling database logging if there are performance issues

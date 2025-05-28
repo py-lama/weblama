@@ -3,7 +3,7 @@
 """
 Weblama Logging Configuration
 
-This module configures logging for Weblama using the PyLogs package.
+This module configures logging for Weblama using the LogLama package.
 It ensures that environment variables are loaded before any other libraries.
 """
 
@@ -17,7 +17,7 @@ loglama_path = Path(__file__).parent.parent.parent.parent / 'loglama'
 if loglama_path.exists() and str(loglama_path) not in sys.path:
     sys.path.insert(0, str(loglama_path))
 
-# Import PyLogs components
+# Import LogLama components
 try:
     from loglama.config.env_loader import load_env, get_env
     from loglama.utils import configure_logging
@@ -26,7 +26,7 @@ try:
     from loglama.handlers import SQLiteHandler, EnhancedRotatingFileHandler
     LOGLAMA_AVAILABLE = True
 except ImportError as e:
-    print(f"PyLogs import error: {e}")
+    print(f"LogLama import error: {e}")
     LOGLAMA_AVAILABLE = False
     
     # Try to add loglama to path if it's not installed
@@ -45,7 +45,7 @@ except ImportError as e:
             from loglama.handlers import SQLiteHandler, EnhancedRotatingFileHandler
             LOGLAMA_AVAILABLE = True
     except ImportError as e2:
-        print(f"Second PyLogs import attempt failed: {e2}")
+        print(f"Second LogLama import attempt failed: {e2}")
 
 # Set up basic logging as a fallback
 logging.basicConfig(
@@ -57,13 +57,13 @@ logging.basicConfig(
 
 def init_logging():
     """
-    Initialize logging for Weblama using PyLogs.
+    Initialize logging for Weblama using LogLama.
     
     This function should be called at the very beginning of the application
     before any other imports or configurations are done.
     """
     if not LOGLAMA_AVAILABLE:
-        print("PyLogs package not available. Using default logging configuration.")
+        print("LogLama package not available. Using default logging configuration.")
         return False
     
     # Load environment variables from .env files
@@ -102,7 +102,7 @@ def init_logging():
     )
     
     # Log initialization
-    logger.info('Weblama logging initialized with PyLogs')
+    logger.info('Weblama logging initialized with LogLama')
     return True
 
 

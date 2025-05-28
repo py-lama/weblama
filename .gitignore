@@ -4,6 +4,7 @@ logs
 .db
 .sqlite
 .env
+TODO.txt
 node_modules
 package-lock.json
 # PyCharm helpers

@@ -2,7 +2,7 @@
  * WebLama Logger
  * 
  * This module provides a unified logging interface for WebLama.
- * It will use the PyLogs bridge if available, otherwise fallback to console logging.
+ * It will use the LogLama bridge if available, otherwise fallback to console logging.
  */
 
 // Configuration

@@ -1,16 +1,16 @@
 /**
- * PyLogs JavaScript Client
+ * LogLama JavaScript Client
  * 
- * This module provides a JavaScript client for the PyLogs logging system.
- * It communicates with the Python PyLogs bridge to log messages.
+ * This module provides a JavaScript client for the LogLama logging system.
+ * It communicates with the Python LogLama bridge to log messages.
  */
 
-class PyLogsClient {
+class LogLamaClient {
   /**
-   * Create a new PyLogsClient.
+   * Create a new LogLamaClient.
    * 
    * @param {Object} options - Configuration options
-   * @param {string} options.url - URL of the PyLogs bridge API
+   * @param {string} options.url - URL of the LogLama bridge API
    * @param {boolean} options.consoleOutput - Whether to also output logs to the console
    * @param {string} options.defaultLevel - Default log level
    */
@@ -26,7 +26,7 @@ class PyLogsClient {
   }
 
   /**
-   * Check if the PyLogs bridge is available.
+   * Check if the LogLama bridge is available.
    * 
    * @returns {Promise<boolean>} - Whether the bridge is available
    */
@@ -34,16 +34,16 @@ class PyLogsClient {
     try {
       const response = await fetch(`${this.url}/health`);
       if (response.ok) {
-        console.log('PyLogs bridge is available');
+        console.log('LogLama bridge is available');
         this.enabled = true;
         return true;
       } else {
-        console.warn('PyLogs bridge returned an error');
+        console.warn('LogLama bridge returned an error');
         this.enabled = false;
         return false;
       }
     } catch (error) {
-      console.warn('PyLogs bridge is not available:', error.message);
+      console.warn('LogLama bridge is not available:', error.message);
       this.enabled = false;
       return false;
     }
@@ -111,7 +111,7 @@ class PyLogsClient {
       return response.ok;
     } catch (error) {
       if (this.consoleOutput) {
-        console.error('Error sending log to PyLogs bridge:', error.message);
+        console.error('Error sending log to LogLama bridge:', error.message);
       }
       return false;
     }
@@ -174,7 +174,7 @@ class PyLogsClient {
 }
 
 // Create a global instance with default settings
-const loglama = new PyLogsClient();
+const loglama = new LogLamaClient();
 
 // Export both the class and the default instance
-export { PyLogsClient, loglama as default };
+export { LogLamaClient, loglama as default };

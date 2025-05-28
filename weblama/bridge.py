@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
 """
-WebLama PyLogs Bridge
+WebLama LogLama Bridge
 
 This module provides a bridge between the JavaScript WebLama application
-and the Python PyLogs logging system. It exposes a simple HTTP API
+and the Python LogLama logging system. It exposes a simple HTTP API
 that the JavaScript application can use to log messages.
 """
 
@@ -19,7 +19,7 @@ import threading
 # Import logging configuration
 from weblama.logging_config import init_logging, get_logger
 
-# Initialize logging with PyLogs
+# Initialize logging with LogLama
 init_logging()
 
 # Get a logger
@@ -130,7 +130,7 @@ def main():
     """
     import argparse
     
-    parser = argparse.ArgumentParser(description='WebLama PyLogs Bridge')
+    parser = argparse.ArgumentParser(description='WebLama LogLama Bridge')
     parser.add_argument('--host', default='127.0.0.1', help='Host to bind to')
     parser.add_argument('--port', type=int, default=8085, help='Port to listen on')
     args = parser.parse_args()
